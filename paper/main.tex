@@ -1,0 +1,416 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{xspace}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc}
+
+\hypersetup{colorlinks=true, linkcolor=blue!60!black, citecolor=blue!60!black,
+  urlcolor=blue!60!black, pdfauthor={Academic Integrity Recorder Project}}
+
+\geometry{margin=2.4cm}
+
+\newcommand{\pkg}{\textsc}
+\newcommand{\air}{\pkg{Academic Integrity Recorder}\xspace}
+\newcommand{\evpkg}{\textsc{Evidence Package~v1}\xspace}
+\newcommand{\jcs}{\textsc{RFC\,8785 JCS}\xspace}
+\newcommand{\aead}{\textsc{XChaCha20-Poly1305}\xspace}
+\newcommand{\ed}{\textsc{Ed25519}\xspace}
+\newcommand{\argon}{\textsc{Argon2id}\xspace}
+
+\title{Process Trustworthiness: A Local-First, Tamper-Evident Standard and\\
+Reference Implementation for Verifiable Research-Provenance Evidence}
+
+\author{[Author Name]\thanks{Corresponding author. ORCID: [0000-0000-0000-0000].
+Affiliation: [Institution]. Email: [author@example.org].
+Code and specification: \url{https://github.com/chongliuresearch/academic-integrity-recorder}.}
+\and
+The \air Project}
+
+\date{Manuscript version 0.1.0 --- \today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Reproducibility has become the dominant frame for scientific integrity: a result
+is trustworthy insofar as an independent party can rebuild it from shared data and
+code. We argue that reproducibility verifies \emph{what} was claimed, but not
+\emph{how} the claim was arrived at, and that the latter is a distinct, complementary
+pillar of integrity that the current crisis exposes but does not address. We call
+this pillar \emph{process trustworthiness}: verifiable evidence that the conduct of
+research---experimentation, reading, writing, and reasoning---was recorded as it
+happened, under an attested device, and disclosed honestly about its own limits.
+We motivate this pillar from the literature on the reproducibility crisis, give its
+scientific rationale and technical feasibility, and present a concrete exemplar:
+an open, local-first \evpkg and its Rust/Tauri reference implementation. The system
+maintains a tamper-evident hash chain under an \ed device signer, encrypts sensitive
+content with \aead, canonicalizes records with \jcs, and exports a two-layer package
+that any third party can verify \emph{offline}. Crucially, the design refuses to
+certify identity, authorship, originality, or completeness: it discloses capability
+boundaries honestly (including platforms where capture is \emph{unavailable}) and
+records its own gaps. We close with the scope, limitations, and a governance path
+for adopting process-provenance evidence as a community standard.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+The reproducibility crisis is frequently told as a story about \emph{results}: too
+many published findings cannot be rebuilt from the materials authors share
+\citep{nosek2015top,stodden2009}. The standard remedy is therefore to share more---data,
+code, protocols, preregistrations---so that the result can be re-derived
+\citep{nosek2015top,stodden2009}. This frames scientific integrity almost entirely
+around \emph{reproducibility}: the capacity of an independent actor to regenerate a
+claimed outcome.
+
+We propose a complementary frame. Reproducibility answers the question
+\textit{``can the result be rebuilt?''} It does not answer \textit{``was the result
+arrived at honestly?''} A finding can be perfectly reproducible yet the product of
+selective reporting, post-hoc hypothesizing, undisclosed reuse of a collaborator's
+work, or an AI-assisted draft presented as original. Conversely, a genuinely honest
+workflow may fail to reproduce for reasons unrelated to misconduct---fragile
+materials, unreported environmental conditions, or legitimate stochasticity
+\citep{ioannidis2005}. The two pillars are correlated but not the same, and the
+crisis literature documents the blind spot explicitly: even when studies are
+replicated, scholars cannot tell whether the \emph{process} that produced the original
+was faithful \citep{john2012,fanelli2009}.
+
+We call the missing pillar \textbf{process trustworthiness}. It is the property that
+the conduct of research was recorded as it occurred, bound to an attested device,
+and accompanied by an honest account of what was and was not observed. Process
+trustworthiness is \emph{not} a claim of integrity, originality, or identity. It is
+a verifiable record of evidence about process, with its limitations made part of the
+record.
+
+Our contributions are:
+\begin{enumerate}
+  \item a clear separation of \emph{reproducibility} (what) from
+        \emph{process trustworthiness} (how), with an argument that the latter is a
+        distinct scientific-integrity pillar;
+  \item a design for local-first, tamper-evident, privacy-preserving, and
+        \emph{honestly bounded} process evidence, including an \evpkg specification;
+  \item an open reference implementation (\air) in Rust (core), Tauri (desktop),
+        and browser/VS\,Code/shell extensions, with an offline verifier;
+  \item a candid treatment of scope, adversarial limits, and a governance path
+        for adoption.
+\end{enumerate}
+
+\begin{quote}
+\textbf{Non-claim.} A process-evidence package proves byte integrity and a device
+signature. It does \emph{not} certify identity, authorship, originality, or academic
+integrity, and it cannot prove that all research activity was captured. This boundary
+is enforced in code and in the exported manifest, not merely asserted in prose.
+\end{quote}
+
+\section{The Reproducibility Crisis}
+\label{sec:crisis}
+
+\subsection{What the empirical record shows}
+
+The crisis is not anecdotal. In a 2016 \emph{Nature} survey of 1,576 researchers,
+\textbf{70\%} reported having failed to reproduce another group's experiment, and
+more than half reported failing to reproduce \emph{their own} \citep{baker2016}.
+Among large coordinated replications, the Open Science Collaboration reran 100
+psychology studies and found only \textbf{36\%} reproduced the original statistically
+significant result, with effect sizes roughly half as large \citep{osc2015}. In
+preclinical cancer biology, the Reproducibility Project reproduced only a minority of
+high-impact findings \citep{errington2021}, consistent with earlier industry reports
+that roughly \textbf{11\%} (6 of 53) of landmark preclinical studies could be
+reproduced internally \citep{begley2012} and that a major pharmaceutical pipeline
+observed reproducibility in only about one fifth of projects \citep{prinz2011}.
+
+These numbers are not a verdict on any discipline's honesty; they are a verdict on the
+\emph{visibility} of process. As \citet{ioannidis2005} argued two decades ago, the
+prevailing incentive structure predicts a large fraction of false positives even
+without malfeasance, and \citet{john2012} documented that questionable research
+practices (p-hacking, selective reporting, undisclosed flexibility) are common and
+often unconscious.
+
+\subsection{Why reproducibility alone is insufficient}
+
+Reproducibility operates on the \emph{output} side of research. It asks whether, given
+shared inputs, the same outputs reappear. Three gaps follow.
+
+First, \textbf{the reporting gap}. Reproducibility depends on what authors choose to
+share. Studies show extensive under-disclosure of experimental design, and that the
+absence of a disclosure norm is itself a cause of non-reproduction
+\citep{nosek2015top}. What is never written down cannot be reproduced, and the
+decision of what to write down is exactly the process reproducibility cannot see.
+
+Second, \textbf{the selectivity gap}. Even with full data, reproducibility cannot
+distinguish a result obtained by pre-specified analysis from one obtained by
+exploring many analyses and reporting the best \citep{ioannidis2005,gelman2014}.
+Preregistration addresses this prospectively \citep{nosek2018}, but it covers a
+narrow slice of ordinary research behavior and is silent about the long, messy
+trail of reading, drafting, and revision that precedes any registration.
+
+Third, \textbf{the provenance gap}. Modern research increasingly involves tools---search,
+writing environments, version control, and AI assistants---whose use is rarely
+disclosed in a verifiable way \citep{gao2023}. Whether and how an AI
+contributed to a manuscript, whether a passage was copied from a collaborator, or
+whether a figure was regenerated after peer review are questions about \emph{process},
+and reproducibility is structurally blind to them.
+
+None of this diminishes reproducibility; it motivates a second pillar that observes
+the conduct of research directly rather than inferring it from its outputs.
+
+\section{Process Trustworthiness: Rationale and Feasibility}
+\label{sec:rationale}
+
+\subsection{Scientific rationale}
+
+Process trustworthiness is continuous with long-standing ideas in the philosophy and
+practice of science. The laboratory notebook is a centuries-old technology for exactly
+this purpose: a contemporaneous, append-only record that makes the conduct of
+experiment visible to later scrutiny \citep{macrina2017}. The W3C \textsc{PROV}
+data model formalizes provenance as a first-class, machine-checkable entity
+\citep{w3cprov2013,moreau2013,moreau2015}, and open-science movements have long argued
+that transparency of process is as important as availability of products
+\citep{nosek2015top,fanelli2011}.
+
+Epistemically, the case is simple. A scientific claim is warranted not only by its
+being re-derivable but by the trustworthiness of the pathway that produced it. When
+that pathway is recorded \emph{as it happened} and \emph{bound to an attested device},
+a later reader gains a new kind of evidence: not that the result is true, but that
+the reported process is the actual one. This is weaker than proof and stronger than
+assertion. It is, in effect, the same role a version-control history or a signed build
+plays in software engineering---except applied to the reasoning itself.
+
+Process trustworthiness is also \emph{complementary}, not competitive, with
+reproducibility. The two can be combined: share the data and code (reproducibility)
+\emph{and} attach a verifiable process record (trustworthiness). Where reproducibility
+fails for innocent reasons, the process record may still stand; where reproducibility
+succeeds but the process was deceptive, the record is what reveals it.
+
+\subsection{Technical feasibility}
+
+Three properties make process evidence practical today where it was not a decade ago.
+
+\textbf{Local-first, privacy-preserving capture.} Evidence can be collected on the
+researcher's own machine without a server, without surveillance, and with sensitive
+content never leaving the device in cleartext. This removes the principal objection to
+process monitoring---that it is a panopticon---and aligns with data-minimization
+norms \citep{voigt2017}.
+
+\textbf{Cheap, standard cryptography.} A tamper-evident record is a hash chain: each
+event commits to its predecessor, so any deletion, reordering, or edit breaks the
+chain \citep{crosby2009}. A device signature (\ed) attests the recorder;
+canonicalization (\jcs) makes hashing serialization-independent \citep{rfc8785};
+authenticated encryption (\aead) protects sensitive content; and an
+internet-independent timestamp (e.g., OpenTimestamps) can later prove existence without
+trusting a notary \citep{opents}. None of these are exotic; all are library-grade.
+
+\textbf{Offline, adversarial verification.} Because integrity is mathematical, a
+skeptic needs no special access to check a package. The verifier is a small,
+auditable program that re-derives every hash and signature. This is the same
+principle that makes signed commits and checksums trustworthy without a trusted
+third party.
+
+\section{A Proposed Exemplar: Evidence Package v1 and Reference Implementation}
+\label{sec:design}
+
+We present \air, an open-source implementation of the above, and the \evpkg it emits.
+The design obeys five principles: \emph{local-first}, \emph{tamper-evidence},
+\emph{honest capability disclosure}, \emph{privacy-by-default}, and
+\emph{offline verification}.
+
+\subsection{Architecture}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, node distance=0.45cm and 0.4cm,
+  every node/.style={font=\footnotesize, align=center, text width=2.3cm}]
+  \node[draw, rounded corners, fill=blue!8] (cap)
+    {Capture adapters\\(macOS native;\\browser / VS\,Code /\\shell extensions)};
+  \node[draw, rounded corners, fill=green!9, right=of cap] (core)
+    {Evidence core (Rust)\\hash chain\\JCS \textperiodcentered{} \aead\\\ed \textperiodcentered{} \argon};
+  \node[draw, rounded corners, fill=yellow!12, right=of core] (store)
+    {Local store\\SQLite index +\\immutable encrypted\\segments + checkpoints};
+  \node[draw, rounded corners, fill=orange!12, below=of store] (exp)
+    {Export\\\evpkg\\public + sensitive layer};
+  \node[draw, rounded corners, fill=purple!12, left=of exp] (ver)
+    {Offline verifier\\manifest + chain\\integrity checks};
+  \draw[->] (cap) -- (core);
+  \draw[->] (core) -- (store);
+  \draw[->] (store) -- (exp);
+  \draw[->] (exp) -- (ver);
+  \draw[->, dashed] (cap.south) |- ($(exp.north)+(0,0.2)$);
+\end{tikzpicture}
+\caption{Local-first architecture. Evidence flows from platform capture adapters into
+a Rust evidence core that maintains a tamper-evident hash chain under an \ed device
+signer, is persisted in an immutable local store, exported as a two-layer
+\evpkg, and verified entirely offline. No telemetry leaves the device.}
+\label{fig:arch}
+\end{figure}
+
+Capture adapters observe activity---foreground application, file events, browser and
+editor interactions, shell commands (opt-in), and screenshots of the selected window
+on supported platforms. They forward events to the evidence core, which canonicalizes,
+hashes, signs, and persists them (Figure~\ref{fig:arch}).
+
+\subsection{The evidence event and hash chain}
+
+Each recorded moment is an \emph{evidence event} with a monotonic sequence number,
+occurrence and capture timestamps, a source, a semantic kind (e.g., input,
+file-modified, web-interaction, annotation, anchor-created, AI-disclosure), a
+sensitivity label, and a payload. The core computes
+\begin{align*}
+h_{\text{payload}} &= \mathrm{SHA256}(\jcs(\text{payload})),\\
+h_{\text{event}}  &= \mathrm{SHA256}(\jcs(\text{material})),
+\end{align*}
+where $\text{material}$ binds the event's identity, project, timestamps, source, kind,
+sensitivity, $h_{\text{payload}}$, and the \emph{previous} event hash
+$h_{\text{prev}}$. The first event's predecessor is a fixed 64-zero genesis hash. The
+result is a linked, tamper-evident chain: altering, deleting, or reordering any event
+changes its $h_{\text{event}}$ and thus breaks every subsequent link and the signed
+head \citep{crosby2009}.
+
+Canonicalization uses \jcs (UTF-16 property-name ordering, I-JSON safe-integer
+range) so that hashing is independent of key order or whitespace
+\citep{rfc8785}. The device attests each signed high-water checkpoint with \ed
+\citep{bernstein2012}; the fingerprint published in the manifest is
+$\mathrm{SHA256}$ of the public key, and sensitive content is sealed with \aead
+\citep{bernstein2008}.
+
+\subsection{Storage with crash recovery}
+
+Events are persisted as immutable, create-only encrypted \texttt{.segment} files named
+by zero-padded sequence, alongside an encrypted \texttt{objects/} store for captured
+artifacts and a \texttt{checkpoints/} directory of signed high-water markers
+(\texttt{signed-high-water/v1}). Each append writes the segment (with \texttt{fsync}),
+writes a \emph{signed pending-append} record, then indexes and checkpoints, then
+removes the pending record. On open, the store reconciles any surviving pending append
+and rejects unsigned extra segments, missing or reordered segments, and truncation of
+the signed tail \citep{crosby2009}. Legacy stores require an explicit, honestly bounded
+migration that seals validated local bytes without claiming to prove earlier
+existence.
+
+\subsection{Two-layer export and honest disclosure}
+
+Export produces a single \evpkg (a ZIP) with a signed manifest. The \emph{public
+layer} contains \texttt{evidence.json} (events with payloads replaced by their
+hashes), a bilingual \texttt{report.html} (zh-CN/en), an English-summary
+\texttt{report.pdf}, and a \texttt{timestamp-target.json} for optional OpenTimestamps.
+The \emph{sensitive layer} holds the full events, research items, artifacts, anchors,
+and AI disclosures, encrypted under a passphrase derived with \argon
+(Argon2id) \citep{argon2}. The manifest carries an explicit \texttt{evidenceClaim} and a
+\texttt{limitations} list, and embeds a \texttt{capabilityReport} recording, per
+platform capability, one of \textsc{Available}, \textsc{PermissionRequired},
+\textsc{Degraded}, or \textsc{Unavailable}.
+
+This last point is the design's distinctive honesty mechanism. The macOS adapter is
+implemented; on Windows and Linux the same adapter reports capture as
+\textsc{Unavailable} rather than fabricating capability \citep{airspec}. Gaps are
+first-class evidence: explicit \texttt{Gap}/\texttt{Redaction} events record
+\emph{why} coverage lapsed (permission denied, platform limitation, adapter failure,
+user pause/exclusion, content deleted/redacted, data unavailable). Manuscript anchors
+bind a research claim to a quote in a PDF/DOCX/\TeX/Markdown source by
+$\mathrm{SHA256}$ of the quote and surrounding context, and can be revalidated as
+\textsc{Valid}, \textsc{Relocatable}, or \textsc{Stale} \citep{airpec}. An
+\emph{active-time} algorithm reports unique observed foreground activity, capped by a
+timeout and reset on pause, lock, sleep, or backgrounding---a conservative lower bound,
+never an over-claim.
+
+\subsection{Offline verification}
+
+A skeptic runs the verifier on the package alone. It checks the manifest \ed signature,
+the final checkpoint signature, continuity of the public hash chain, every file's
+size and $\mathrm{SHA256}$ digest against the manifest, and---given the sensitive-layer
+passphrase---that payload hashes reproduce, the event chain is complete, active time is
+consistent, and declared relationships hold. It rejects duplicate or undeclared ZIP
+entries, digest mismatches, and wrong passphrases. Success proves \emph{integrity and a
+device signature only}; the report states this in its output.
+
+\section{Scope, Limitations, Governance, and Adoption}
+\label{sec:scope}
+
+\subsection{Scope and what the record can show}
+
+Process trustworthiness is most valuable where the contested question is \emph{how},
+not \emph{whether}: disclosure of AI assistance, provenance of a passage, the trail of
+revision, the existence of a planned experiment that was later dropped, or a
+contemporaneous lab record. It strengthens theses, grant reports, and post-publication
+audit alike.
+
+\subsection{Honest limitations and adversarial considerations}
+
+The system makes no claim to completeness or proof of integrity, and the verifier says
+so. Specifically:
+
+\begin{itemize}
+  \item \textbf{Coverage upper bound.} Only observed activity is recorded. Offline work,
+        use of an un-instrumented machine, or delegation to a colleague creates gaps
+        the record cannot fill, and the design records these as gaps rather than hiding
+        them \citep{airthreat}.
+  \item \textbf{Platform dependence.} Capture fidelity is bounded by what the OS
+        permits; where an adapter is \textsc{Unavailable}, the record says so
+        \citep{aircap}.
+  \item \textbf{Not identity.} A device signature attests a key, not a legal person.
+        It cannot prevent one person from using another's device or account.
+  \item \textbf{Adversarial bypass.} A determined adversary can record on a separate
+        machine, disable capture, or fabricate inputs before recording; the system
+        raises the cost and leaves traces (gaps, inconsistencies) but is not a
+        tamper-proof oracle.
+  \item \textbf{Not a substitute for peer review.} The record is evidence to weigh, not
+        a verdict on merit or originality.
+\end{itemize}
+
+These limits are features when stated plainly: a process record is trustworthy
+\emph{because} it is honest about where it stops.
+
+\subsection{Governance and adoption path}
+
+We propose process-provenance evidence as a lightweight, open community standard, in
+the spirit of how code signing and transparency logs became default expectations
+\citep{crosby2009}. Concrete steps:
+
+\begin{enumerate}
+  \item \textbf{Open specification and interop.} The \evpkg format and verifier are
+        open; journals or archives can run the verifier on deposited packages without
+        vendor lock-in \citep{airpec,airspec}.
+  \item \textbf{Complement, don't replace.} Tie the record to existing norms: the
+        data-availability statement, the preregistration, and the conflicts/disclosure
+        form. The AI-disclosure entity maps directly onto emerging AI-use policies
+        \citep{gao2023,cope2023}.
+  \item \textbf{Tiered adoption.} Start with self-archiving and reviewer-on-request,
+        then optional journal encouragement, then (where appropriate) a deposition
+        requirement for certain claim types. Voluntary, low-friction adoption avoids the
+        surveillance objection.
+  \item \textbf{Incentives for honesty.} Because gaps are recorded, a complete,
+        gap-light record becomes a positive signal; a record full of disclosed gaps is
+        at least honest, which is more than the current default of silence.
+\end{enumerate}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+Reproducibility verifies \emph{what} was claimed; verifiable process provenance
+verifies \emph{how} the claim was arrived at. We have argued that the second is a
+distinct, complementary pillar of scientific integrity, grounded in the epistemics of
+the laboratory record and made practical by local-first, cryptographic, offline
+verifiable evidence. \air and the \evpkg show that such evidence can be collected
+without surveillance, encrypted by default, and verified by anyone---while refusing to
+certify more than it can prove. Adopting process trustworthiness will not end the
+reproducibility crisis, but it gives the scientific community a new, honest instrument
+for the part of integrity that reproducibility was never designed to see.
+
+\section*{Acknowledgments}
+\label{sec:ack}
+The authors thank the open-source and open-science communities whose tools and norms
+this work builds upon. The reference implementation is released under the AGPL-3.0
+license.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}

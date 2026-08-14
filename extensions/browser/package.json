@@ -1,0 +1,8 @@
+{
+  "name": "@air/browser-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "tsc && cp manifest.json dist/manifest.json && cp manifest.firefox.json dist/manifest.firefox.json && cp popup.html dist/popup.html && cp popup.css dist/popup.css", "typecheck": "tsc --noEmit", "test": "tsc && node --test dist/shared.test.js" },
+  "devDependencies": { "@types/chrome": "^0.0.287", "@types/node": "^22.10.2", "typescript": "^5.7.2" }
+}

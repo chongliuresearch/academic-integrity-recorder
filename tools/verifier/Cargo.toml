@@ -1,0 +1,20 @@
+[package]
+name = "evidence-verifier"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "evidence-verifier"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap = { version = "4.5", features = ["derive", "env"] }
+evidence-core = { path = "../../crates/evidence-core" }
+serde_json.workspace = true
+
+[dev-dependencies]
+chrono.workspace = true
+tempfile = "3.14"
+uuid.workspace = true

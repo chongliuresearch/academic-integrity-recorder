@@ -1,0 +1,27 @@
+{
+  "name": "academic-integrity-recorder",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/desktop",
+    "extensions/browser",
+    "extensions/vscode"
+  ],
+  "scripts": {
+    "dev": "npm --workspace @air/desktop run dev",
+    "desktop": "npm --workspace @air/desktop run tauri:dev",
+    "build": "npm run build:desktop && npm run build:browser && npm run build:vscode",
+    "build:desktop": "npm --workspace @air/desktop run build",
+    "build:browser": "npm --workspace @air/browser-extension run build",
+    "build:vscode": "npm --workspace @air/vscode-extension run build",
+    "build:macos": "npm --workspace @air/desktop run tauri:build:macos",
+    "test": "cargo test --workspace && npm run typecheck && npm run test:browser && npm run test:vscode",
+    "test:browser": "npm --workspace @air/browser-extension run test",
+    "test:vscode": "npm --workspace @air/vscode-extension run test",
+    "typecheck": "npm --workspace @air/desktop run typecheck && npm --workspace @air/browser-extension run typecheck && npm --workspace @air/vscode-extension run typecheck",
+    "verify": "cargo run -p evidence-verifier --"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

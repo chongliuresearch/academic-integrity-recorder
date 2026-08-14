@@ -1,0 +1,23 @@
+{
+  "name": "@air/vscode-extension",
+  "displayName": "溯研 Research Provenance",
+  "description": "Opt-in semantic research activity events for Academic Integrity Recorder.",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "vscode": "^1.96.0" },
+  "main": "./dist/extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "configuration": {
+      "title": "溯研",
+      "properties": {
+        "airRecorder.enabled": { "type":"boolean", "default":false, "description":"Enable semantic recording for the currently armed project." },
+        "airRecorder.endpoint": { "type":"string", "default":"http://127.0.0.1:43119/v1/events" },
+        "airRecorder.projectId": { "type":"string", "default":"", "description":"Current project ID from the desktop application." },
+        "airRecorder.token": { "type":"string", "default":"", "description":"VS Code-only pairing token from the desktop application." }
+      }
+    }
+  },
+  "scripts": { "build":"tsc", "typecheck":"tsc --noEmit", "test":"tsc && node --test dist/protocol.test.js" },
+  "devDependencies": { "@types/node":"^22.10.2", "@types/vscode":"^1.96.0", "typescript":"^5.7.2" }
+}

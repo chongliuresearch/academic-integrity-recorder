@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "溯研·研究过程记录",
+  "version": "0.1.0",
+  "description": "仅在用户选定网站和项目录制期间记录研究网页过程。",
+  "permissions": ["storage", "tabs", "downloads"],
+  "host_permissions": ["http://127.0.0.1:43119/*", "<all_urls>"],
+  "background": { "scripts": ["background.js"], "type": "module" },
+  "action": { "default_popup": "popup.html", "default_title": "溯研" },
+  "content_scripts": [{ "matches": ["<all_urls>"], "js": ["field-policy.js", "content.js"], "run_at": "document_idle" }],
+  "incognito": "not_allowed",
+  "browser_specific_settings": { "gecko": { "id": "research-provenance@openresearch.org", "strict_min_version": "121.0" } }
+}
