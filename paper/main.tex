@@ -26,7 +26,7 @@
 \newcommand{\ed}{\textsc{Ed25519}\xspace}
 \newcommand{\argon}{\textsc{Argon2id}\xspace}
 
-\title{Unforgeable Process Evidence:\\ A Complement to Reproducibility}
+\title{Unforgeable Process Evidence:\\ A New Paradigm of Scientific Integrity\\ Complementing Reproducibility}
 
 \author{[Author Name]\thanks{Corresponding author. ORCID: [0000-0000-0000-0000].
 Affiliation: [Institution]. Email: [author@example.org].
@@ -50,8 +50,9 @@ propose \emph{unforgeability} as the operative property of that axis: evidence a
 research process that is computationally infeasible to fabricate or retroactively
 alter, so that a validated record is itself non-trivial evidence that the reported
 process occurred as and when it is attested to have occurred. We develop the scientific
-rationale for treating unforgeable process evidence as a support for scientific
-truth-claims---complementing, not replacing, reproducibility---and we show that the
+rationale for treating unforgeable process evidence as a new paradigm of scientific
+integrity---a support for truth-claims that complements, rather than replaces,
+reproducibility---and we show that the
 property is technically achievable today with local, privacy-preserving, cryptographic
 recording that any third party can verify offline. We instantiate the idea in a concrete
 exemplar: the open \evpkg format and its Rust/Tauri reference implementation (\air),
@@ -109,8 +110,8 @@ Our contributions are:
 \begin{enumerate}
   \item a clear separation of \emph{reproducibility} (what was claimed) from
         \emph{unforgeable process evidence} (how the claim was arrived at), and an
-        argument that the latter is a distinct, complementary support for scientific
-        truth-claims;
+        argument that the latter constitutes a new paradigm of integrity complementing
+        reproducibility;
   \item a characterization of unforgeability for research-process evidence, stated as a
         conditional guarantee under explicit cryptographic and operational assumptions,
         together with its epistemic role as a complement to reproducibility;
@@ -515,9 +516,9 @@ the spirit of how code signing and transparency logs became default expectations
 \label{sec:conclusion}
 
 Reproducibility verifies \emph{what} was claimed; unforgeable process evidence verifies
-\emph{how} the claim was arrived at. We have argued that the second is a distinct,
-complementary support for scientific truth-claims---not a replacement for reproducibility
-but a partner to it, closing the gap that reproducibility, by construction, cannot see.
+\emph{how} the claim was arrived at. We have argued that the second is a new paradigm of
+scientific integrity---not a replacement for reproducibility but a partner to it, closing
+the gap that reproducibility, by construction, cannot see.
 The property is attainable today with local, privacy-preserving, cryptographic recording
 and offline adversarial verification, as \air and the \evpkg demonstrate, and it is
 honest about where it stops: it attests process integrity, never truth, originality, or

@@ -1,8 +1,8 @@
 # 学术研究过程诚信记录仪
 
-一个本地优先、主动自我报告式的研究过程记录工具。它将研究软件活动、文件版本、研究条目、AI 使用和终稿锚点组织为可验证证据包。
+一个本地优先、主动自我报告式的研究过程记录工具。它将研究软件活动、文件版本、研究条目、AI 使用和终稿锚点组织为不可伪造的可验证证据包。
 
-> 本工具提供过程佐证，不是原创性、作者身份或学术诚信认证。
+> 本工具提供不可伪造的过程佐证，但不证明原创性、作者身份或学术诚信。
 
 ## 开发
 
@@ -51,14 +51,14 @@ flowchart LR
 
 ## 论文 / Paper
 
-本项目配套一篇英文论文，提出「过程可信（process trustworthiness）」作为与可重复性互补的科学诚信新支柱：
+本项目配套一篇英文论文，提出「不可伪造性（unforgeability）」作为与可重复性并列的科学诚信新范式：
 
-> Process Trustworthiness: A Local-First, Tamper-Evident Standard and Reference
-> Implementation for Verifiable Research-Provenance Evidence
+> Unforgeable Process Evidence: A New Paradigm of Scientific Integrity
+> Complementing Reproducibility
 
 - 源文件与编译产物：`paper/main.tex`、`paper/refs.bib`、`paper/main.pdf`
-- 核心论点：可重复性验证「*结果能否被重建*」，过程可信验证「*结果是如何得出的*」；二者互补而非替代。
-- 非主张（non-claim）：证据包只证明字节完整性与设备签名，不认证身份、作者资格、原创性或学术诚信。
+- 核心论点：可重复性验证「*结果能否被重建*」（what），不可伪造的过程证据验证「*结果是如何得出的*」（how）；二者是相互独立的范式，互补而非替代。
+- 非主张（non-claim）：证据包只证明过程完整性与设备签名（在既定密码学假设下），不认证身份、作者资格、原创性或学术诚信。
 
 浏览器、VS Code 与 Shell 使用彼此隔离的项目专用本机令牌；浏览器在读取
 字段内容前确认当前域名仍获选，VS Code/Shell 只接受所选研究目录中的路径。
