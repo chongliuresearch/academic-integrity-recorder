@@ -61,6 +61,9 @@ authorship, or completeness. We close with scope, limitations, and a governance 
 adoption.
 \end{abstract}
 
+\noindent\textbf{Keywords:} unforgeability; reproducibility; research integrity;
+process provenance; tamper-evident logging.
+
 \section{Introduction}
 \label{sec:intro}
 
@@ -334,7 +337,7 @@ methods section, which remains forgeable however detailed it is.
 \label{sec:design}
 
 We now illustrate---not exhaust---the argument with a deliberately brief account of
-\air, an open-source \emph{prototype} of the \evpkg, released under the AGPL-3.0
+\air, an open-source \emph{prototype} reference implementation of the \evpkg, released under the AGPL-3.0
 license and open to community contribution. It is a proof-of-concept, not a finished
 system: the specification is the stable artifact, while the code is an evolving
 demonstration that the property is attainable, with deliberately partial platform
@@ -404,7 +407,7 @@ just as important, what it does not.
 The design's distinctive mechanism is \emph{honest capability disclosure}. Each capture
 capability is reported as \textsc{Available}, \textsc{PermissionRequired},
 \textsc{Degraded}, or \textsc{Unavailable}, and any lapse in coverage is recorded as an
-explicit \texttt{Gap} event rather than silently omitted \citep{air2026}. A research
+explicit \texttt{Gap} event rather than silently omitted. A research
 claim can also be \emph{anchored} to a specific passage of a manuscript and later
 revalidated, and an \emph{active-time} measure reports a conservative lower bound on
 observed foreground activity. This honesty is what makes the record trustworthy: it is
@@ -421,7 +424,7 @@ verifier's own output says so.
 \section{Scope, Limitations, Governance, and Adoption}
 \label{sec:scope}
 
-\subsection{Scope and what the record can show}
+\subsection{Scope and applicability}
 
 Unforgeable process evidence is most valuable where the contested question is \emph{how},
 not \emph{whether}: disclosure of AI assistance, provenance of a passage, the trail of
@@ -469,7 +472,7 @@ the spirit of how code signing and transparency logs became default expectations
 \begin{enumerate}
   \item \textbf{Open specification and interop.} The format and its verification are
         specified openly, so any archive or journal can check a deposited package
-        without vendor lock-in \citep{air2026}.
+        without vendor lock-in.
   \item \textbf{Complement, don't replace.} Tie the record to existing norms: the
         data-availability statement, the preregistration, and the conflicts/disclosure
         form. The AI-disclosure entity maps directly onto emerging AI-use policies
