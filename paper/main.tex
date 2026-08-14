@@ -66,9 +66,9 @@ adoption.
 
 The reproducibility crisis is usually told as a story about \emph{results}: too many
 published findings cannot be rebuilt from the materials that authors share
-\citep{nosek2015top,stodden2009}. The standard remedy has therefore been to share
+\citep{nosek2015top,donoho2009}. The standard remedy has therefore been to share
 more---data, code, protocols, preregistrations---so that an independent party can
-re-derive the outcome \citep{nosek2015top,stodden2009}. This framing has made
+re-derive the outcome \citep{nosek2015top,donoho2009}. This framing has made
 \emph{reproducibility} the de facto currency of scientific integrity: a result is
 trustworthy to the extent that it can be regenerated.
 
@@ -203,8 +203,8 @@ machinery to answer it mechanically. The laboratory notebook is a centuries-old
 technology whose entire purpose is to make the conduct of experiment visible to later
 scrutiny, precisely because its contemporaneity---the fact that its entries were written
 as events unfolded rather than reconstructed afterward---is what gives it evidentiary
-weight \citep{macrina2017}. The W3C \textsc{PROV} model formalizes provenance as a
-first-class, machine-checkable object \citep{w3cprov2013,moreau2013,moreau2015}, and
+weight \citep{macrina2014}. The W3C \textsc{PROV} model formalizes provenance as a
+first-class, machine-checkable object \citep{w3cprov2013,moreau2013,moreau2013book}, and
 open-science movements have long insisted that transparency of process is as important
 as availability of products \citep{nosek2015top,fanelli2011}. What these strands share is
 an implicit commitment to exactly the property we wish to make explicit: that the account
@@ -425,13 +425,13 @@ platform capability, one of \textsc{Available}, \textsc{PermissionRequired},
 
 This last point is the design's distinctive honesty mechanism. The macOS adapter is
 implemented; on Windows and Linux the same adapter reports capture as
-\textsc{Unavailable} rather than fabricating capability \citep{airspec}. Gaps are
+\textsc{Unavailable} rather than fabricating capability \citep{air2026}. Gaps are
 first-class evidence: explicit \texttt{Gap}/\texttt{Redaction} events record
 \emph{why} coverage lapsed (permission denied, platform limitation, adapter failure,
 user pause/exclusion, content deleted/redacted, data unavailable). Manuscript anchors
 bind a research claim to a quote in a PDF/DOCX/\TeX/Markdown source by
 $\mathrm{SHA256}$ of the quote and surrounding context, and can be revalidated as
-\textsc{Valid}, \textsc{Relocatable}, or \textsc{Stale} \citep{airpec}. An
+\textsc{Valid}, \textsc{Relocatable}, or \textsc{Stale} \citep{air2026}. An
 \emph{active-time} algorithm reports unique observed foreground activity, capped by a
 timeout and reset on pause, lock, sleep, or backgrounding---a conservative lower bound,
 never an over-claim.
@@ -466,10 +466,10 @@ so. Specifically:
   \item \textbf{Coverage upper bound.} Only observed activity is recorded. Offline work,
         use of an un-instrumented machine, or delegation to a colleague creates gaps
         the record cannot fill, and the design records these as gaps rather than hiding
-        them \citep{airthreat}.
+        them \citep{air2026}.
   \item \textbf{Platform dependence.} Capture fidelity is bounded by what the OS
         permits; where an adapter is \textsc{Unavailable}, the record says so
-        \citep{aircap}.
+        \citep{air2026}.
   \item \textbf{Conditional on assumptions.} Unforgeability is computational and
         conditional: it holds only while signing keys remain secret and any external
         timestamp is honest. A compromised key or a controlled clock can retrospectively
@@ -496,7 +496,7 @@ the spirit of how code signing and transparency logs became default expectations
 \begin{enumerate}
   \item \textbf{Open specification and interop.} The \evpkg format and verifier are
         open; journals or archives can run the verifier on deposited packages without
-        vendor lock-in \citep{airpec,airspec}.
+        vendor lock-in \citep{air2026}.
   \item \textbf{Complement, don't replace.} Tie the record to existing norms: the
         data-availability statement, the preregistration, and the conflicts/disclosure
         form. The AI-disclosure entity maps directly onto emerging AI-use policies
