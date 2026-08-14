@@ -52,10 +52,10 @@ rationale for treating unforgeable process evidence as a new paradigm of scienti
 integrity---a support for truth-claims that complements, rather than replaces,
 reproducibility---and we show that the
 property is technically achievable today with local, privacy-preserving, cryptographic
-recording that any third party can verify offline. We instantiate the idea in a concrete
-exemplar: the open \evpkg format and its Rust/Tauri reference implementation (\air),
-which maintains a hash-chained, device-signed, encrypted record and discloses its own
-capability boundaries honestly. Throughout, we are careful about what unforgeability
+recording that any third party can verify offline. We make the claim concrete through a
+proof-of-concept exemplar: an open specification (\evpkg) and a prototype reference
+implementation (\air), released as open source and open to community contribution.
+Throughout, we are careful about what unforgeability
 does \emph{not} establish: it attests process integrity, not truth, originality,
 authorship, or completeness. We close with scope, limitations, and a governance path for
 adoption.
@@ -113,10 +113,9 @@ Our contributions are:
   \item a characterization of unforgeability for research-process evidence, stated as a
         conditional guarantee under explicit cryptographic and operational assumptions,
         together with its epistemic role as a complement to reproducibility;
-  \item an \evpkg specification and an open reference implementation (\air) in Rust
-        (core), Tauri (desktop), and browser/VS\,Code/shell extensions, with an offline
-        verifier, demonstrating that the property is achievable with local,
-        privacy-preserving tooling;
+  \item a proof-of-concept exemplar---an open \evpkg specification and a prototype
+        reference implementation (\air), released as open source---demonstrating that
+        the property is achievable with ordinary, local, privacy-preserving tooling;
   \item a candid treatment of scope, adversarial limits, and a governance path for
         adoption.
 \end{enumerate}
@@ -126,8 +125,8 @@ Our contributions are:
 recorded process occurred as recorded, on the attested device, at the attested time,
 modulo the stated cryptographic assumptions. It does \emph{not} certify identity,
 authorship, originality, correctness, or academic integrity, and it cannot prove that
-all research activity was captured. This boundary is enforced in code and in the
-exported manifest, not merely asserted in prose.
+all research activity was captured. This boundary is designed into the recording
+format and its exported manifest, not merely asserted in prose.
 \end{quote}
 
 \section{The Reproducibility Crisis}
@@ -331,13 +330,18 @@ principle that makes signed commits and checksums trustworthy without a trusted 
 party, and it is what distinguishes unforgeable process evidence from a self-reported
 methods section, which remains forgeable however detailed it is.
 
-\section{A Proposed Exemplar: Evidence Package v1 and Reference Implementation}
+\section{A Feasibility Exemplar: a Prototype Reference Implementation}
 \label{sec:design}
 
-We present \air, an open-source implementation of the above, and the \evpkg it emits.
-The design obeys five principles: \emph{unforgeability}, \emph{local-first capture},
-\emph{honest capability disclosure}, \emph{privacy-by-default}, and
-\emph{offline verification}.
+We now illustrate---not exhaust---the argument with a deliberately brief account of
+\air, an open-source \emph{prototype} of the \evpkg, released under the AGPL-3.0
+license and open to community contribution. It is a proof-of-concept, not a finished
+system: the specification is the stable artifact, while the code is an evolving
+demonstration that the property is attainable, with deliberately partial platform
+support. We therefore describe only the mechanisms that carry the argument---
+\emph{unforgeability}, \emph{local-first capture}, \emph{honest capability disclosure},
+\emph{privacy-by-default}, and \emph{offline verification}---and leave implementation
+detail to the project itself.
 
 \subsection{Architecture}
 
@@ -346,105 +350,73 @@ The design obeys five principles: \emph{unforgeability}, \emph{local-first captu
 \begin{tikzpicture}[>=Stealth, node distance=0.45cm and 0.4cm,
   every node/.style={font=\footnotesize, align=center, text width=2.3cm}]
   \node[draw, rounded corners, fill=blue!8] (cap)
-    {Capture adapters\\(macOS native;\\browser / VS\,Code /\\shell extensions)};
+    {Capture adapters\\(foreground app, files,\\browser, editor, shell)};
   \node[draw, rounded corners, fill=green!9, right=of cap] (core)
-    {Evidence core (Rust)\\hash chain\\JCS \textperiodcentered{} \aead\\\ed \textperiodcentered{} \argon};
+    {Evidence core\\hash-chained,\\device-signed record};
   \node[draw, rounded corners, fill=yellow!12, right=of core] (store)
-    {Local store\\SQLite index +\\immutable encrypted\\segments + checkpoints};
+    {Local store\\encrypted,\\append-only};
   \node[draw, rounded corners, fill=orange!12, below=of store] (exp)
-    {Export\\\evpkg\\public + sensitive layer};
+    {Export\\public + sensitive layer};
   \node[draw, rounded corners, fill=purple!12, left=of exp] (ver)
-    {Offline verifier\\manifest + chain\\integrity checks};
+    {Offline verifier\\re-derives hashes,\\signatures};
   \draw[->] (cap) -- (core);
   \draw[->] (core) -- (store);
   \draw[->] (store) -- (exp);
   \draw[->] (exp) -- (ver);
   \draw[->, dashed] (cap.south) |- ($(exp.north)+(0,0.2)$);
 \end{tikzpicture}
-\caption{Architecture for unforgeable process evidence. Evidence flows from platform
-capture adapters into a Rust evidence core that maintains a hash-chained, device-signed
-record, is persisted in an immutable local store, exported as a two-layer \evpkg, and
-verified entirely offline. No telemetry leaves the device.}
+\caption{Sketch of the architecture. Evidence flows from capture adapters into an
+evidence core that maintains a hash-chained, device-signed record, is persisted in an
+append-only local store, exported as a two-layer \evpkg, and verified entirely offline.
+No telemetry leaves the device.}
 \label{fig:arch}
 \end{figure}
 
 Capture adapters observe activity---foreground application, file events, browser and
-editor interactions, shell commands (opt-in), and screenshots of the selected window
-on supported platforms. They forward events to the evidence core, which canonicalizes,
-hashes, signs, and persists them (Figure~\ref{fig:arch}).
+editor interactions, and (opt-in) shell commands. They forward events to the evidence
+core, which canonicalizes, hashes, signs, and persists them (Figure~\ref{fig:arch}).
 
-\subsection{The evidence event and hash chain}
+\subsection{The hash chain}
 
-Each recorded moment is an \emph{evidence event} with a monotonic sequence number,
-occurrence and capture timestamps, a source, a semantic kind (e.g., input,
-file-modified, web-interaction, annotation, anchor-created, AI-disclosure), a
-sensitivity label, and a payload. The core computes
-\begin{align*}
-h_{\text{payload}} &= \mathrm{SHA256}(\jcs(\text{payload})),\\
-h_{\text{event}}  &= \mathrm{SHA256}(\jcs(\text{material})),
-\end{align*}
-where $\text{material}$ binds the event's identity, project, timestamps, source, kind,
-sensitivity, $h_{\text{payload}}$, and the \emph{previous} event hash
-$h_{\text{prev}}$. The first event's predecessor is a fixed 64-zero genesis hash. The
-result is a linked chain whose unforgeability follows from the hash commitment:
-altering, deleting, or reordering any event changes its $h_{\text{event}}$ and thus
-breaks every subsequent link and the signed head \citep{crosby2009}.
+The core mechanism is an append-only hash chain. Each recorded moment is an
+\emph{evidence event} carrying a sequence number, timestamps, a source, a semantic
+kind, and a sensitivity label; its payload hash and the hash of the preceding event are
+committed into the event's own hash. Because every link binds its predecessor, editing,
+deleting, or reordering any event changes its hash and so breaks every subsequent link
+and the signed head of the chain \citep{crosby2009}. The primitives are standard and
+battle-tested: collision-resistant hashing, a device signature, authenticated
+encryption for sensitive content, and an optional internet-independent timestamp to
+prove existence at or before a point in time
+\citep{rfc8785,bernstein2012,bernstein2008,opents}. Events are persisted as immutable,
+append-only encrypted segments with signed checkpoints of the chain head; a crash is
+reconciled on open, and unsigned, missing, or reordered segments are rejected, so
+history cannot be silently rewritten.
 
-Canonicalization uses \jcs (UTF-16 property-name ordering, I-JSON safe-integer
-range) so that hashing is independent of key order or whitespace
-\citep{rfc8785}. The device attests each signed high-water checkpoint with \ed
-\citep{bernstein2012}; the fingerprint published in the manifest is
-$\mathrm{SHA256}$ of the public key, and sensitive content is sealed with \aead
-\citep{bernstein2008}.
+\subsection{Export and honest disclosure}
 
-\subsection{Storage with crash recovery}
+Export produces a single \evpkg with a signed manifest and two layers. The \emph{public
+layer} carries the event chain with payloads replaced by their hashes and a
+human-readable report, so integrity can be checked without revealing content; the
+\emph{sensitive layer} holds the full events, artifacts, and disclosures, sealed under
+a passphrase-derived key. The manifest states exactly what the package claims---and,
+just as important, what it does not.
 
-Events are persisted as immutable, create-only encrypted \texttt{.segment} files named
-by zero-padded sequence, alongside an encrypted \texttt{objects/} store for captured
-artifacts and a \texttt{checkpoints/} directory of signed high-water markers
-(\texttt{signed-high-water/v1}). Each append writes the segment (with \texttt{fsync}),
-writes a \emph{signed pending-append} record, then indexes and checkpoints, then
-removes the pending record. On open, the store reconciles any surviving pending append
-and rejects unsigned extra segments, missing or reordered segments, and truncation of
-the signed tail \citep{crosby2009}. Legacy stores require an explicit, honestly bounded
-migration that seals validated local bytes without claiming to prove earlier
-existence.
-
-\subsection{Two-layer export and honest disclosure}
-
-Export produces a single \evpkg (a ZIP) with a signed manifest. The \emph{public
-layer} contains \texttt{evidence.json} (events with payloads replaced by their
-hashes), a bilingual \texttt{report.html} (zh-CN/en), an English-summary
-\texttt{report.pdf}, and a \texttt{timestamp-target.json} for optional OpenTimestamps.
-The \emph{sensitive layer} holds the full events, research items, artifacts, anchors,
-and AI disclosures, encrypted under a passphrase derived with \argon
-(Argon2id) \citep{argon2}. The manifest carries an explicit \texttt{evidenceClaim} and a
-\texttt{limitations} list, and embeds a \texttt{capabilityReport} recording, per
-platform capability, one of \textsc{Available}, \textsc{PermissionRequired},
-\textsc{Degraded}, or \textsc{Unavailable}.
-
-This last point is the design's distinctive honesty mechanism. The macOS adapter is
-implemented; on Windows and Linux the same adapter reports capture as
-\textsc{Unavailable} rather than fabricating capability \citep{air2026}. Gaps are
-first-class evidence: explicit \texttt{Gap}/\texttt{Redaction} events record
-\emph{why} coverage lapsed (permission denied, platform limitation, adapter failure,
-user pause/exclusion, content deleted/redacted, data unavailable). Manuscript anchors
-bind a research claim to a quote in a PDF/DOCX/\TeX/Markdown source by
-$\mathrm{SHA256}$ of the quote and surrounding context, and can be revalidated as
-\textsc{Valid}, \textsc{Relocatable}, or \textsc{Stale} \citep{air2026}. An
-\emph{active-time} algorithm reports unique observed foreground activity, capped by a
-timeout and reset on pause, lock, sleep, or backgrounding---a conservative lower bound,
-never an over-claim.
+The design's distinctive mechanism is \emph{honest capability disclosure}. Each capture
+capability is reported as \textsc{Available}, \textsc{PermissionRequired},
+\textsc{Degraded}, or \textsc{Unavailable}, and any lapse in coverage is recorded as an
+explicit \texttt{Gap} event rather than silently omitted \citep{air2026}. A research
+claim can also be \emph{anchored} to a specific passage of a manuscript and later
+revalidated, and an \emph{active-time} measure reports a conservative lower bound on
+observed foreground activity. This honesty is what makes the record trustworthy: it is
+explicit about where it stops.
 
 \subsection{Offline verification}
 
-A skeptic runs the verifier on the package alone. It checks the manifest \ed signature,
-the final checkpoint signature, continuity of the public hash chain, every file's
-size and $\mathrm{SHA256}$ digest against the manifest, and---given the sensitive-layer
-passphrase---that payload hashes reproduce, the event chain is complete, active time is
-consistent, and declared relationships hold. It rejects duplicate or undeclared ZIP
-entries, digest mismatches, and wrong passphrases. Success proves \emph{process
-integrity and a device signature only}; the report states this in its output.
+Because the property is mathematical, a skeptic can check it without special access: a
+small, auditable verifier re-derives every hash and signature from the package alone,
+and its success---not any party's assertion---licenses the inference that the record is
+genuine. Success proves \emph{process integrity and a device signature only}, and the
+verifier's own output says so.
 
 \section{Scope, Limitations, Governance, and Adoption}
 \label{sec:scope}
@@ -457,35 +429,36 @@ revision, the existence of a planned experiment that was later dropped, or a
 contemporaneous lab record. It strengthens theses, grant reports, and post-publication
 audit alike.
 
-\subsection{Honest limitations and adversarial considerations}
+\subsection{Limits of the property}
 
-The system makes no claim to completeness or proof of integrity, and the verifier says
-so. Specifically:
+Unforgeability is powerful but bounded, and the bounds belong to the property itself,
+not to any particular implementation.
 
 \begin{itemize}
-  \item \textbf{Coverage upper bound.} Only observed activity is recorded. Offline work,
-        use of an un-instrumented machine, or delegation to a colleague creates gaps
-        the record cannot fill, and the design records these as gaps rather than hiding
-        them \citep{air2026}.
-  \item \textbf{Platform dependence.} Capture fidelity is bounded by what the OS
-        permits; where an adapter is \textsc{Unavailable}, the record says so
-        \citep{air2026}.
-  \item \textbf{Conditional on assumptions.} Unforgeability is computational and
-        conditional: it holds only while signing keys remain secret and any external
-        timestamp is honest. A compromised key or a controlled clock can retrospectively
-        undermine the record.
-  \item \textbf{Not identity.} A device signature attests a key, not a legal person.
-        It cannot prevent one person from using another's device or account.
-  \item \textbf{Adversarial bypass.} A determined adversary can record on a separate
-        machine, disable capture, or fabricate inputs before recording; the system
-        raises the cost and leaves traces (gaps, inconsistencies) but is not a
-        tamper-proof oracle.
-  \item \textbf{Not a substitute for peer review.} The record is evidence to weigh, not
-        a verdict on merit or originality.
+  \item \textbf{Computational and conditional.} The property holds only while signing
+        keys remain secret and any external timestamp is honest; a compromised key or a
+        controlled clock can retrospectively undermine the record. Unforgeability is a
+        guarantee under assumptions, not an absolute.
+  \item \textbf{Attests process, not truth.} An unforgeable record shows that the
+        recorded process occurred as recorded. It does not establish that the result is
+        true, the method correct, or the work original; a faithfully recorded but flawed
+        experiment remains flawed.
+  \item \textbf{No completeness.} The property secures what was \emph{recorded}, not
+        that \emph{everything} was recorded. Activity outside the instrumented
+        environment is invisible to it, and no design can convert an absence of evidence
+        into evidence of absence.
+  \item \textbf{Not identity or authorship.} A device signature attests a key, not a
+        legal person; it cannot distinguish the key's owner from anyone else using the
+        device or account.
+  \item \textbf{Cannot close the environment.} A determined adversary may work on
+        uninstrumented machines or fabricate inputs before they are recorded; the
+        property narrows the ways a claim can be false but does not eliminate every one.
+  \item \textbf{Complements, not substitutes, review.} The record is evidence to be
+        weighed alongside reproducibility and peer review, never a verdict on merit.
 \end{itemize}
 
-These limits are features when stated plainly: an unforgeable record is trustworthy
-\emph{because} it is honest about where it stops.
+These limits are features when stated plainly: unforgeable evidence is trustworthy
+\emph{because} it is explicit about where it stops.
 
 \subsection{Governance and adoption path}
 
@@ -494,9 +467,9 @@ the spirit of how code signing and transparency logs became default expectations
 \citep{crosby2009}. Concrete steps:
 
 \begin{enumerate}
-  \item \textbf{Open specification and interop.} The \evpkg format and verifier are
-        open; journals or archives can run the verifier on deposited packages without
-        vendor lock-in \citep{air2026}.
+  \item \textbf{Open specification and interop.} The format and its verification are
+        specified openly, so any archive or journal can check a deposited package
+        without vendor lock-in \citep{air2026}.
   \item \textbf{Complement, don't replace.} Tie the record to existing norms: the
         data-availability statement, the preregistration, and the conflicts/disclosure
         form. The AI-disclosure entity maps directly onto emerging AI-use policies
@@ -518,17 +491,18 @@ Reproducibility verifies \emph{what} was claimed; unforgeable process evidence v
 scientific integrity---not a replacement for reproducibility but a partner to it, closing
 the gap that reproducibility, by construction, cannot see.
 The property is attainable today with local, privacy-preserving, cryptographic recording
-and offline adversarial verification, as \air and the \evpkg demonstrate, and it is
-honest about where it stops: it attests process integrity, never truth, originality, or
-authorship. Adopting unforgeable process evidence will not end the reproducibility
+and offline adversarial verification, as an open specification and a prototype
+implementation demonstrate, and it is honest about where it stops: it attests process
+integrity, never truth, originality, or authorship. Adopting unforgeable process evidence
+will not end the reproducibility
 crisis, but it gives the scientific community a new instrument for the part of integrity
 that reproducibility was never designed to observe.
 
 \section*{Acknowledgments}
 \label{sec:ack}
 The author thanks the open-source and open-science communities whose tools and norms
-this work builds upon. The reference implementation is released under the AGPL-3.0
-license.
+this work builds upon. The prototype reference implementation is released under the
+AGPL-3.0 license and welcomes community contribution.
 
 \bibliographystyle{plainnat}
 \bibliography{refs}
