@@ -18,6 +18,8 @@ apps/desktop/src-tauri/bin/
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+*.bcf
+*.run.xml
 
 # Local workspace data
 .workbuddy/

@@ -9,7 +9,9 @@
 \usepackage{url}
 \usepackage{xspace}
 \usepackage{hyperref}
-\usepackage{natbib}
+\usepackage{csquotes}
+\usepackage[style=apa,backend=biber]{biblatex}
+\addbibresource{refs.bib}
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta,calc}
 
@@ -68,9 +70,9 @@ process provenance; evidence.
 
 The reproducibility crisis is usually told as a story about \emph{results}: too many
 published findings cannot be rebuilt from the materials that authors share
-\citep{nosek2015top,donoho2009}. The standard remedy has therefore been to share
+\parencite{nosek2015top,donoho2009}. The standard remedy has therefore been to share
 more---data, code, protocols, preregistrations---so that an independent party can
-re-derive the outcome \citep{nosek2015top,donoho2009}. This framing has made
+re-derive the outcome \parencite{nosek2015top,donoho2009}. This framing has made
 \emph{reproducibility} the de facto currency of scientific integrity: a result is
 trustworthy to the extent that it can be regenerated.
 
@@ -80,10 +82,10 @@ arrived at honestly?''} A finding can be perfectly reproducible and yet be the p
 of selective reporting, post-hoc hypothesizing, undisclosed reuse of a collaborator's
 work, or an AI-assisted draft presented as original. Conversely, a genuinely honest
 workflow may fail to reproduce for reasons unrelated to misconduct---fragile materials,
-unreported environmental conditions, or legitimate stochasticity \citep{ioannidis2005}.
+unreported environmental conditions, or legitimate stochasticity \parencite{ioannidis2005}.
 The two questions are correlated but distinct, and the crisis literature documents the
 blind spot explicitly: even when a study is replicated, an observer cannot tell whether
-the \emph{process} that produced the original was faithful \citep{john2012,fanelli2009}.
+the \emph{process} that produced the original was faithful \parencite{john2012,fanelli2009}.
 
 What is missing, we argue, is not another call for transparency but a precise,
 checkable concept. We call that concept \emph{unforgeability}, and we give it its
@@ -164,20 +166,20 @@ in prose.
 
 The crisis is not anecdotal. In a 2016 \emph{Nature} survey of 1,576 researchers,
 \textbf{70\%} reported having failed to reproduce another group's experiment, and
-more than half reported failing to reproduce \emph{their own} \citep{baker2016}.
+more than half reported failing to reproduce \emph{their own} \parencite{baker2016}.
 Among large coordinated replications, the Open Science Collaboration reran 100
 psychology studies and found only \textbf{36\%} reproduced the original statistically
-significant result, with effect sizes roughly half as large \citep{osc2015}. In
+significant result, with effect sizes roughly half as large \parencite{osc2015}. In
 preclinical cancer biology, the Reproducibility Project reproduced only a minority of
-high-impact findings \citep{errington2021}, consistent with earlier industry reports
+high-impact findings \parencite{errington2021}, consistent with earlier industry reports
 that roughly \textbf{11\%} (6 of 53) of landmark preclinical studies could be
-reproduced internally \citep{begley2012} and that a major pharmaceutical pipeline
-observed reproducibility in only about one fifth of projects \citep{prinz2011}.
+reproduced internally \parencite{begley2012} and that a major pharmaceutical pipeline
+observed reproducibility in only about one fifth of projects \parencite{prinz2011}.
 
 These numbers are not a verdict on any discipline's honesty; they are a verdict on the
-\emph{visibility} of process. As \citet{ioannidis2005} argued two decades ago, the
+\emph{visibility} of process. As \textcite{ioannidis2005} argued two decades ago, the
 prevailing incentive structure predicts a large fraction of false positives even
-without malfeasance, and \citet{john2012} documented that questionable research
+without malfeasance, and \textcite{john2012} documented that questionable research
 practices (p-hacking, selective reporting, undisclosed flexibility) are common and
 often unconscious.
 
@@ -189,19 +191,19 @@ shared inputs, the same outputs reappear. Three gaps follow.
 First, \textbf{the reporting gap}. Reproducibility depends on what authors choose to
 share. Studies show extensive under-disclosure of experimental design, and that the
 absence of a disclosure norm is itself a cause of non-reproduction
-\citep{nosek2015top}. What is never written down cannot be reproduced, and the
+\parencite{nosek2015top}. What is never written down cannot be reproduced, and the
 decision of what to write down is exactly the process reproducibility cannot see.
 
 Second, \textbf{the selectivity gap}. Even with full data, reproducibility cannot
 distinguish a result obtained by pre-specified analysis from one obtained by
-exploring many analyses and reporting the best \citep{ioannidis2005,gelman2014}.
-Preregistration addresses this prospectively \citep{nosek2018}, but it covers a
+exploring many analyses and reporting the best \parencite{ioannidis2005,gelman2014}.
+Preregistration addresses this prospectively \parencite{nosek2018}, but it covers a
 narrow slice of ordinary research behavior and is silent about the long, messy
 trail of reading, drafting, and revision that precedes any registration.
 
 Third, \textbf{the provenance gap}. Modern research increasingly involves tools---search,
 writing environments, version control, and AI assistants---whose use is rarely
-disclosed in a verifiable way \citep{gao2023}. Whether and how an AI
+disclosed in a verifiable way \parencite{gao2023}. Whether and how an AI
 contributed to a manuscript, whether a passage was copied from a collaborator, or
 whether a figure was regenerated after peer review are questions about \emph{process},
 and reproducibility is structurally blind to them.
@@ -217,37 +219,37 @@ history, and the space between ``result'' and ``process'' is more crowded than t
 crisis framing alone suggests. Three strands are most relevant.
 
 \emph{Scientific provenance.} The W3C \textsc{PROV} family models provenance as a
-first-class, machine-checkable object \citep{w3cprov2013,moreau2013,moreau2013book}, and
+first-class, machine-checkable object \parencite{w3cprov2013,moreau2013,moreau2013book}, and
 a substantial literature applies provenance to biomedical data and workflows; one 2024
 scoping review alone synthesized 66 studies spanning provenance models, workflow
-tracking, integrity, reproducibility, and completeness \citep{gierend2024provenance}.
+tracking, integrity, reproducibility, and completeness \parencite{gierend2024provenance}.
 Electronic laboratory notebooks (\textsc{ELN}s) moved the paper notebook into software,
 and recent \textsc{ELN} systems such as IntegriLAB combine research-tool integration
 (GitHub, Overleaf, DataLad) with blockchain-anchored certification of activities and
-authorship \citep{easmin2026integrilab}.
+authorship \parencite{easmin2026integrilab}.
 
 \emph{Content and media provenance.} The \textsc{C2PA} standard provides
 cryptographically signed, tamper-evident manifests for digital media, binding origin,
-editing history, and AI involvement to content \citep{c2pa2024}. It targets media
+editing history, and AI involvement to content \parencite{c2pa2024}. It targets media
 artifacts rather than research conduct, but it establishes the pattern---a signed
 manifest verifiable without the producer's cooperation---that this paper applies to the
 research process itself.
 
 \emph{Secure logging and proof-of-process.} Tamper-evident append-only logs are well
-studied \citep{crosby2009}. More recent ``proof-of-process'' work has made explicit the
+studied \parencite{crosby2009}. More recent ``proof-of-process'' work has made explicit the
 gap that motivates this paper: digital signatures prove key possession, not that the
 content was produced through a real process, and a signer can always reconstruct and
-sign intermediate states post hoc \citep{condrey2026witnessd}.
+sign intermediate states post hoc \parencite{condrey2026witnessd}.
 
 \emph{Philosophy of science.} The concepts this paper deploys are inherited, not coined.
 The notion of a \emph{paradigm} as the organizing frame of a scientific community is
-Kuhn's \citep{kuhn1962}; the notion of a \emph{defeater}---a consideration that
+Kuhn's \parencite{kuhn1962}; the notion of a \emph{defeater}---a consideration that
 undermines the warrant for a belief---is Pollock's, and the distinction between
-\emph{rebutting} and \emph{undercutting} defeaters is his \citep{pollock1986}. And the
+\emph{rebutting} and \emph{undercutting} defeaters is his \parencite{pollock1986}. And the
 idea that experimental knowledge has always depended on making a result
 \emph{witnessable} to a community of remote assessors---rather than on any single
 observer's testimony---is the central claim of the historical study of experimental
-life that runs from Robert Boyle's ``virtual witnessing'' onward \citep{shapin1985}.
+life that runs from Robert Boyle's ``virtual witnessing'' onward \parencite{shapin1985}.
 It is no accident that that study devotes a chapter to \emph{replication and its
 troubles}: the difficulty of securing belief through rerunning, and the recourse to
 witnessable records when rerunning fails, is as old as experimental science itself.
@@ -282,13 +284,13 @@ machinery to answer it mechanically. The laboratory notebook is a centuries-old
 technology whose entire purpose is to make the conduct of experiment visible to later
 scrutiny, precisely because its contemporaneity---the fact that its entries were written
 as events unfolded rather than reconstructed afterward---is what gives it evidentiary
-weight \citep{macrina2014}. The experimental tradition that runs from Robert Boyle
+weight \parencite{macrina2014}. The experimental tradition that runs from Robert Boyle
 onward secured the credibility of a ``matter of fact'' by making it \emph{witnessable}:
 detailed reporting and ``virtual witnessing'' allowed distant readers to assess a result
-as if they had been present \citep{shapin1985}. The W3C \textsc{PROV} model formalizes
-provenance as a first-class, machine-checkable object \citep{w3cprov2013,moreau2013,moreau2013book}, and
+as if they had been present \parencite{shapin1985}. The W3C \textsc{PROV} model formalizes
+provenance as a first-class, machine-checkable object \parencite{w3cprov2013,moreau2013,moreau2013book}, and
 open-science movements have long insisted that transparency of process is as important
-as availability of products \citep{nosek2015top,fanelli2011}. What these strands share is
+as availability of products \parencite{nosek2015top,fanelli2011}. What these strands share is
 an implicit commitment to exactly the property we wish to make explicit: that the account
 of how a result was produced should itself be trustworthy.
 
@@ -298,7 +300,7 @@ ethics, to the weight of reputation, and to the career risk that exposure would
 bring---social and informal guarantees, not mechanical or checkable ones. The recurring
 scandals of fabrication and falsification show that this tacit reliance lacks the rigor
 that science demands of itself, and that it fails precisely where the incentives to cut
-corners are strongest \citep{fanelli2009}. Its failure is also costly in a way that
+corners are strongest \parencite{fanelli2009}. Its failure is also costly in a way that
 extends well beyond the fraudulent claim itself: a fabricated or retroactively edited
 result can consume funding that honest work could have used, divert entire lines of
 inquiry down false paths, and absorb the time and attention of the researchers who try
@@ -393,7 +395,7 @@ A corollary follows. The epistemic contribution of unforgeable evidence is prima
 establish that the scientific claim is true, or even that the entire research process
 occurred exactly as represented. It rules out, or substantially weakens, a specific
 class of \emph{defeaters}---that the committed record was silently altered, reordered,
-rewritten, or backdated after the fact \citep{pollock1986}. It removes grounds for doubt
+rewritten, or backdated after the fact \parencite{pollock1986}. It removes grounds for doubt
 rather than supplying positive proof of honesty or truth. That is a real and measurable
 gain, but it is a gain in the strength of a \emph{warrant}, not a shortcut to certainty.
 
@@ -403,7 +405,7 @@ gain, but it is a gain in the strength of a \emph{warrant}, not a shortcut to ce
 It is important to see unforgeability not as a property one attaches to a record, but
 as the organizing concept of a social-epistemic system. A paradigm, in the sense that
 matters here, is a way a community organizes the certification of knowledge
-\citep{kuhn1962}. The reproducibility paradigm organizes certification around the
+\parencite{kuhn1962}. The reproducibility paradigm organizes certification around the
 question ``can the result be rebuilt?''; it has produced an entire apparatus---data and
 code sharing, preregistration, replication consortia, journal data policies. The
 paradigm proposed here organizes a complementary apparatus around the question ``is the
@@ -487,17 +489,17 @@ technical apparatus.
 \textbf{Local-first capture.} The evidence can be collected on the researcher's own
 machine, with no server, no telemetry, and sensitive content never leaving the device
 in cleartext. This addresses the principal objection to process recording---that it is
-surveillance---and aligns with data-minimization norms \citep{voigt2017}. Local-first is
+surveillance---and aligns with data-minimization norms \parencite{voigt2017}. Local-first is
 a design choice in service of the paradigm's adoption, not a headline property.
 
 \textbf{Cheap, standard cryptography.} An append-only hash chain commits each event to
 its predecessor, so that editing, deleting, or reordering any event breaks the chain
-\citep{crosby2009}. A device signature attests the recorder \citep{bernstein2012};
+\parencite{crosby2009}. A device signature attests the recorder \parencite{bernstein2012};
 canonical serialization makes hashing independent of incidental formatting
-\citep{rfc8785}; authenticated encryption seals sensitive content so that verification
-can proceed without exposing it \citep{rfc8439}; and an optional external
+\parencite{rfc8785}; authenticated encryption seals sensitive content so that verification
+can proceed without exposing it \parencite{rfc8439}; and an optional external
 timestamp---the mechanism behind blockchain-anchored timestamping---can prove existence
-at or before a point in time without trusting a notary \citep{opents}. None of this is
+at or before a point in time without trusting a notary \parencite{opents}. None of this is
 exotic; all of it is battle-tested.
 
 \textbf{Offline, adversarial verification.} Because the property is mathematical, a
@@ -561,7 +563,7 @@ The core mechanism is an append-only hash chain. Each recorded moment is an
 kind, and a sensitivity label; its payload hash and the hash of the preceding event are
 committed into the event's own hash. Because every link binds its predecessor, editing,
 deleting, or reordering any event changes its hash and so breaks every subsequent link
-and the signed head of the chain \citep{crosby2009}. Events are persisted as immutable,
+and the signed head of the chain \parencite{crosby2009}. Events are persisted as immutable,
 append-only encrypted segments with signed checkpoints of the chain head; a crash is
 reconciled on open, and unsigned, missing, or reordered segments are rejected, so
 history cannot be silently rewritten.
@@ -640,7 +642,7 @@ These limits are features when stated plainly: unforgeable evidence is trustwort
 The paradigm is a system, and a system is built by norms and institutions, not by a
 technology alone. We therefore propose it as a lightweight, open community standard, in
 the spirit of how tamper-evident logging and code signing became default engineering
-expectations \citep{crosby2009}. Concrete steps toward that system:
+expectations \parencite{crosby2009}. Concrete steps toward that system:
 
 \begin{enumerate}
   \item \textbf{Open specification and interop.} The format and its verification are
@@ -650,7 +652,7 @@ expectations \citep{crosby2009}. Concrete steps toward that system:
   \item \textbf{Complement, don't replace.} Tie the record to existing norms: the
         data-availability statement, the preregistration, and the conflicts/disclosure
         form. The AI-disclosure entity maps directly onto emerging AI-use policies
-        \citep{cope2023}.
+        \parencite{cope2023}.
   \item \textbf{Tiered adoption.} Start with self-archiving and reviewer-on-request,
         then optional journal encouragement, then (where appropriate) a deposition
         requirement for certain claim types. Voluntary, low-friction adoption avoids the
@@ -692,7 +694,6 @@ The author thanks the open-source and open-science communities whose tools and n
 this work builds upon. The prototype reference implementation is released under the
 AGPL-3.0 license and welcomes community contribution.
 
-\bibliographystyle{plainnat}
-\bibliography{refs}
+\printbibliography
 
 \end{document}
