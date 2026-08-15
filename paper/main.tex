@@ -122,9 +122,9 @@ Our contributions are:
   \item a decomposition of process evidence into \emph{record integrity}, \emph{temporal
         commitment}, \emph{key attestation}, \emph{capture fidelity}, \emph{completeness},
         and \emph{process authenticity}, together with a threat-model-relative
-        definition of \emph{unforgeability} and an account of its epistemic role as
-        \emph{defeater reduction}---eliminating a specified class of provenance doubts
-        rather than certifying the conduct itself;
+        definition of \emph{unforgeability}, its graded character as a \emph{degree of
+        unforgeability}, and an account of its epistemic role as \emph{defeater
+        reduction}---eliminative rather than confirmatory;
   \item a positioning of this decomposition against prior provenance, electronic
         lab-notebook, content-provenance, and proof-of-process systems
         (\S\ref{sec:related});
@@ -333,6 +333,49 @@ genuine, because it narrows the ways a claim can be false. The exemplar in
 \S\ref{sec:design} is organized around exactly this property: a hash chain, canonical
 serialization, a device signature, and an optional timestamp, each contributing one of
 the three mechanizable properties.
+
+\subsection{Unforgeability as a matter of degree}
+\label{sec:degree}
+
+We have treated unforgeability as a cryptographic property, but the underlying notion
+is more general, and recognizing that generality clarifies both what the cryptography
+buys and why the concept is epistemically fundamental.
+
+Unforgeability, broadly understood, attaches to \emph{evidence} and to the specific
+claims that evidence is meant to secure, and it is a matter of \emph{degree} rather than
+an all-or-nothing property. Consider two photographs of the same scene. One is a
+yellowed, creased print offered by an elderly woman in a remote mountain village; the
+other is a visually identical image supplied by a young engineer in a high-tech
+industrial park. As images they are indistinguishable, but as evidence they are not
+equally credible. The difference lies not in what the images show but in how hard it
+would be, for each bearer, to produce a convincing counterfeit. The village photograph
+is embedded in circumstances---physical aging, the absence of any fabrication
+infrastructure, and a bearer with neither the means nor the motive to forge---that
+together make a counterfeit expensive and improbable. The engineer's image can be
+synthesized or altered with tools and skill that are cheaply available to its bearer.
+The first photograph has the higher \emph{degree of unforgeability}, and that is what
+underwrites its greater evidentiary weight.
+
+This graded, pre-theoretic notion is exactly what the cryptography of
+\S\ref{sec:design} makes explicit and, within a bounded domain, near-maximal. A hash
+chain and a device signature add no new \emph{content} to a record; they raise its
+degree of unforgeability by attaching a checkable difficulty to any after-the-fact
+counterfeit. The degree is never absolute---it is relative to a threat model and to the
+resources and assumptions granted to an adversary---but it is made \emph{explicit},
+where the village photograph's degree is merely implicit and circumstantial. This, we
+suggest, is the deeper point: the formation of evidence, and therefore of trustworthy
+knowledge, has always depended on this largely unspoken notion of how hard a thing is
+to forge. Process evidence makes that notion explicit, checkable, and precise within
+its stated bounds.
+
+A corollary follows. The epistemic contribution of process evidence is primarily
+\emph{eliminative} rather than directly \emph{confirmatory}. A validated record does
+not establish that the scientific claim is true, or even that the entire research
+process occurred exactly as represented. It rules out, or substantially weakens, a
+specific class of alternative explanations---that committed records were silently
+altered, reordered, or deleted after the fact. It removes grounds for doubt rather than
+supplying positive proof of honesty or truth. That is a real and measurable gain, but
+it is a gain in the strength of a \emph{warrant}, not a shortcut to certainty.
 
 \subsection{Complementarity with reproducibility}
 
