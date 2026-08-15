@@ -24,7 +24,6 @@
 \newcommand{\jcs}{\textsc{RFC\,8785 JCS}\xspace}
 \newcommand{\aead}{\textsc{XChaCha20-Poly1305}\xspace}
 \newcommand{\ed}{\textsc{Ed25519}\xspace}
-\newcommand{\argon}{\textsc{Argon2id}\xspace}
 
 \title{Unforgeable Process Evidence:\\ A New Paradigm of Scientific Integrity\\ Complementing Reproducibility}
 
@@ -43,28 +42,29 @@ Reproducibility has become the dominant frame for scientific integrity: a result
 trusted insofar as an independent party can rebuild it from shared data and code. We
 argue that reproducibility verifies \emph{what} was claimed but remains silent about
 \emph{how} the claim was arrived at, and that this second question is a distinct and
-complementary axis of integrity. We develop that axis as a set of separable
-properties---record integrity, temporal commitment, key attestation, capture fidelity,
-completeness, and process authenticity---and argue that this decomposition constitutes
-a new paradigm of scientific integrity, complementing rather than replacing
-reproducibility. We propose \emph{unforgeability} as the mechanizable property at the
-core of that paradigm: a committed process record that, relative to an explicit threat
-model and adversary class, cannot be altered, reordered, or backdated without
-detection. We are careful about what this does \emph{not} establish. Unforgeability
-secures the record, not the world it describes; it does not by itself show that the
-underlying events occurred as claimed, nor truth, originality, authorship, or
-completeness. Its epistemic role is therefore \emph{defeater reduction}: a validated
+complementary axis of integrity. We develop that axis around a single graded concept,
+\emph{unforgeability}: a property of \emph{evidence}, not of any particular record,
+that measures how hard it would be to produce a convincing counterfeit. We argue that
+the new paradigm this concept underwrites is not a tool but a \emph{system of community
+review and knowledge-establishment}, in which confidence in a scientific claim can rest
+on the unforgeability of its evidence chain and on the soundness of the reasoning from
+evidence to claim, rather than on reproducibility alone---much as confidence in a
+mathematical theorem rests on the checkability of its proof chain and the soundness of
+inference, not on rerunning it. We are careful about what this does \emph{not}
+establish: unforgeability secures the evidence, not the world it describes; it does not
+by itself show that the underlying events occurred, nor truth, originality, authorship,
+or completeness. Its epistemic role is therefore \emph{defeater reduction}: a validated
 record eliminates a specified class of provenance doubts---post-hoc modification,
-backdating, silent deletion or reordering, hidden coverage gaps---rather than
-certifying the conduct itself. We show that the property is attainable today with
-local, privacy-preserving, cryptographic recording that any third party can verify
-offline, and we instantiate it in a proof-of-concept exemplar: an open specification
-(\evpkg) and a prototype reference implementation (\air), released as open source. We
-close with scope, limitations, and a governance path for adoption.
+backdating, silent deletion or reordering---rather than certifying the conduct itself.
+We show that the property is attainable with local, privacy-preserving, cryptographic
+recording that any third party can verify offline, and we instantiate it in a
+proof-of-concept exemplar: an open specification (\evpkg) and a prototype reference
+implementation (\air), released as open source. We close with scope, limitations, and a
+governance path for adoption.
 \end{abstract}
 
 \noindent\textbf{Keywords:} unforgeability; reproducibility; research integrity;
-process provenance; tamper-evident logging.
+process provenance; evidence.
 
 \section{Introduction}
 \label{sec:intro}
@@ -89,20 +89,35 @@ blind spot explicitly: even when a study is replicated, an observer cannot tell 
 the \emph{process} that produced the original was faithful \citep{john2012,fanelli2009}.
 
 What is missing, we argue, is not another call for transparency but a precise,
-checkable property. We call that property \emph{unforgeability}: relative to an
-explicit threat model and adversary class, a committed process record is unforgeable
-if it cannot be altered, reordered, or backdated without that change being detected.
-Two points bound this claim. First, unforgeability is a property of the
-\emph{record}, not of the world it describes: it shows that the committed record is
-intact, not that the underlying events actually occurred. A holder of a valid signing
-key can always commit a chain of events that never happened; what the keyholder cannot
-do is rewrite that chain afterward without breaking it. Second, this narrower guarantee
-is still load-bearing, because the integrity failures that matter for process
-trustworthiness---post-hoc editing, backdating, silent deletion, hidden coverage
-gaps---operate precisely by rewriting the record after the fact. Unforgeability thus
-narrows the ways a claim can be false, without pretending to establish the rest. It
-gives the broader goal of \emph{process trustworthiness}---verifiable evidence about
-the conduct of research---a formal, falsifiable, and deliberately bounded core.
+checkable concept. We call that concept \emph{unforgeability}, and we give it its
+broadest, most fundamental reading: a property of \emph{evidence}, not of any particular
+record. Evidence is that which warrants belief in a claim, and evidence can be easier or
+harder to forge; unforgeability measures that difficulty, and it is therefore a matter
+of degree rather than an all-or-nothing property. Under this reading, the new paradigm
+is not a cryptographic technique but a \emph{system of community review and
+knowledge-establishment}: a way of organizing the certification of scientific claims so
+that confidence in a claim can rest on the unforgeability of its evidence chain and on
+the soundness of the reasoning from evidence to claim, rather than on reproducibility
+alone. The model for this is mathematics. A theorem is not accepted because anyone has
+reproduced it---there is no rerun of a theorem---but because its proof is a chain of
+steps that any competent mathematician can check, linked by rules of inference that are
+sound. Mathematical confidence rests on the integrity of a checkable chain plus the
+soundness of reasoning, not on rerunning; the proposal here is that science can adopt
+that same structure for the dimension of its own claims that reproducibility, by
+construction, cannot reach.
+
+Two points bound this claim. First, unforgeability is a property of the evidence, not
+of the world it describes: it shows that a body of evidence resists being counterfeited
+after the fact, not that the underlying events actually occurred. A holder of a valid
+signing key can always commit a chain of events that never happened; what the keyholder
+cannot do is rewrite that chain afterward without leaving a detectable break. Second,
+this narrower guarantee is still load-bearing, because the integrity failures that
+matter for process trustworthiness---post-hoc editing, backdating, silent deletion, the
+concealment of detected gaps---operate precisely by rewriting the record after the fact.
+Unforgeability thus narrows the ways a claim can be false, without pretending to
+establish the rest. It gives the broader goal of \emph{process trustworthiness}---evidence
+about the conduct of research that can itself be trusted---a precise, falsifiable, and
+deliberately bounded core.
 
 The distinction between the goal and the property matters. ``Process trustworthiness''
 describes an aspiration that is easy to affirm and hard to evaluate; ``unforgeability''
@@ -117,33 +132,32 @@ Our contributions are:
 \begin{enumerate}
   \item a clear separation of \emph{reproducibility} (what was claimed) from
         \emph{unforgeable process evidence} (how the claim was arrived at), and an
-        argument that the latter constitutes a new paradigm of integrity complementing
+        argument that the latter underwrites a new paradigm of integrity complementing
         reproducibility;
-  \item a decomposition of process evidence into \emph{record integrity}, \emph{temporal
-        commitment}, \emph{key attestation}, \emph{capture fidelity}, \emph{completeness},
-        and \emph{process authenticity}, together with a threat-model-relative
-        definition of \emph{unforgeability}, its graded character as a \emph{degree of
-        unforgeability}, and an account of its epistemic role as \emph{defeater
-        reduction}---eliminative rather than confirmatory;
-  \item a positioning of this decomposition against prior provenance, electronic
-        lab-notebook, content-provenance, and proof-of-process systems
-        (\S\ref{sec:related});
+  \item a characterization of \emph{unforgeability} as a graded property of evidence,
+        together with its epistemic role as \emph{defeater reduction}---eliminative
+        rather than confirmatory---and an argument, drawn from the analogy with
+        mathematical proof, that a community can ground confidence in knowledge on
+        checkable, integrity-preserving evidence chains rather than on rerunning alone;
+  \item a positioning of this account against prior provenance, electronic
+        lab-notebook, content-provenance, proof-of-process, and philosophy-of-science
+        work (\S\ref{sec:related});
   \item a proof-of-concept exemplar---an open \evpkg specification and a prototype
         reference implementation (\air), released as open source---demonstrating that
-        the mechanizable properties are achievable with ordinary, local,
-        privacy-preserving tooling;
-  \item a candid treatment of scope, adversarial limits, and a governance path for
-        adoption.
+        the property is achievable with ordinary, local, privacy-preserving tooling;
+  \item a candid treatment of scope, limits, and a governance path for the social
+        system that the paradigm implies.
 \end{enumerate}
 
 \begin{quote}
-\textbf{Non-claim.} Unforgeable process evidence proves record integrity---that a
-committed record has not been altered, reordered, or backdated since it was produced by
-the attested key, modulo the stated cryptographic assumptions. It does \emph{not} show
-that the underlying events actually occurred as recorded, nor certify identity,
-authorship, originality, correctness, or academic integrity, and it cannot prove that
-all research activity was captured. This boundary is designed into the recording
-format and its exported manifest, not merely asserted in prose.
+\textbf{Non-claim.} Unforgeable process evidence secures the \emph{evidence}, not the
+world it describes. It shows that a committed record has not been altered, reordered,
+or backdated since it was produced by the attested key, modulo the stated cryptographic
+assumptions. It does \emph{not} show that the underlying events actually occurred as
+recorded, nor certify identity, authorship, originality, correctness, or academic
+integrity, and it cannot prove that all research activity was captured. This boundary
+is designed into the recording format and its exported manifest, not merely asserted
+in prose.
 \end{quote}
 
 \section{The Reproducibility Crisis}
@@ -195,7 +209,7 @@ contributed to a manuscript, whether a passage was copied from a collaborator, o
 whether a figure was regenerated after peer review are questions about \emph{process},
 and reproducibility is structurally blind to them.
 
-None of this diminishes reproducibility; it motivates a second pillar that observes
+None of this diminishes reproducibility; it motivates a second paradigm that observes
 the conduct of research directly rather than inferring it from its outputs.
 
 \section{Related Work}
@@ -210,10 +224,10 @@ first-class, machine-checkable object \citep{w3cprov2013,moreau2013,moreau2013bo
 a substantial literature applies provenance to biomedical data and workflows; one 2024
 scoping review alone synthesized 66 studies spanning provenance models, workflow
 tracking, integrity, reproducibility, and completeness \citep{gierend2024provenance}.
-Electronic laboratory notebooks (\textsc{ELN}s) moved the paper notebook into software
-\citep{macrina2014}, and recent \textsc{ELN} systems such as IntegriLAB combine
-research-tool integration (GitHub, Overleaf, DataLad) with blockchain-anchored
-certification of activities and authorship \citep{easmin2026integrilab}.
+Electronic laboratory notebooks (\textsc{ELN}s) moved the paper notebook into software,
+and recent \textsc{ELN} systems such as IntegriLAB combine research-tool integration
+(GitHub, Overleaf, DataLad) with blockchain-anchored certification of activities and
+authorship \citep{easmin2026integrilab}.
 
 \emph{Content and media provenance.} The \textsc{C2PA} standard provides
 cryptographically signed, tamper-evident manifests for digital media, binding origin,
@@ -228,15 +242,27 @@ gap that motivates this paper: digital signatures prove key possession, not that
 content was produced through a real process, and a signer can always reconstruct and
 sign intermediate states post hoc \citep{condrey2026witnessd}.
 
+\emph{Philosophy of science.} The concepts this paper deploys are inherited, not coined.
+The notion of a \emph{paradigm} as the organizing frame of a scientific community is
+Kuhn's \citep{kuhn1962}; the notion of a \emph{defeater}---a consideration that
+undermines the warrant for a belief---is Pollock's, and the distinction between
+\emph{rebutting} and \emph{undercutting} defeaters is his \citep{pollock1986}. And the
+idea that experimental knowledge has always depended on making a result
+\emph{witnessable} to a community of remote assessors---rather than on any single
+observer's testimony---is the central claim of the historical study of experimental
+life that runs from Robert Boyle's ``virtual witnessing'' onward \citep{shapin1985}.
+It is no accident that that study devotes a chapter to \emph{replication and its
+troubles}: the difficulty of securing belief through rerunning, and the recourse to
+witnessable records when rerunning fails, is as old as experimental science itself.
+
 What the present work adds is not provenance tracking itself---that is well
-established---but a \emph{decomposition}. Existing systems largely aim to make the
-record \emph{complete} or \emph{certified}; they rarely distinguish, as we do in
-\S\ref{sec:rationale}, the separate epistemic roles of reproducibility, record
-integrity, capture coverage, and process authenticity, and they rarely make the
-\emph{non-claims}---that a verified record attests the record, not truth, authorship,
-or completeness---an explicit, machine-checkable part of the format. Our contribution
-is that decomposition and its instantiation in a privacy-preserving, gap-aware evidence
-standard.
+established---but a \emph{repositioning}. Existing systems largely aim to make the
+record \emph{complete} or \emph{certified}; they treat the record as the object of
+interest. This paper argues that unforgeability is a property of \emph{evidence}---the
+graded difficulty of counterfeiting it---and that the contribution of a provenance
+system is best understood not as a guarantee of authenticity but as the elimination of
+a specified class of defeaters, explicitly bounded by what it does not establish. We
+develop that account in \S\ref{sec:rationale}.
 
 \section{Unforgeability: Rationale and Epistemic Role}
 \label{sec:rationale}
@@ -259,8 +285,11 @@ machinery to answer it mechanically. The laboratory notebook is a centuries-old
 technology whose entire purpose is to make the conduct of experiment visible to later
 scrutiny, precisely because its contemporaneity---the fact that its entries were written
 as events unfolded rather than reconstructed afterward---is what gives it evidentiary
-weight \citep{macrina2014}. The W3C \textsc{PROV} model formalizes provenance as a
-first-class, machine-checkable object \citep{w3cprov2013,moreau2013,moreau2013book}, and
+weight \citep{macrina2014}. The experimental tradition that runs from Robert Boyle
+onward secured the credibility of a ``matter of fact'' by making it \emph{witnessable}:
+detailed reporting and ``virtual witnessing'' allowed distant readers to assess a result
+as if they had been present \citep{shapin1985}. The W3C \textsc{PROV} model formalizes
+provenance as a first-class, machine-checkable object \citep{w3cprov2013,moreau2013,moreau2013book}, and
 open-science movements have long insisted that transparency of process is as important
 as availability of products \citep{nosek2015top,fanelli2011}. What these strands share is
 an implicit commitment to exactly the property we wish to make explicit: that the account
@@ -275,107 +304,112 @@ just as easily as a genuine one. Reproducibility, by construction, cannot tell t
 apart: it verifies the artifact, not the act. If the act is what matters for evidentiary
 weight, then a property that binds the act---rather than the artifact---is what is missing.
 
-\subsection{Unforgeability as the operative property}
+\subsection{The mathematical analogy}
 
-A record of the research process can be asked to vouch for several different things,
-and these must be kept apart, because they have different statuses and different
-mechanisms. We distinguish six properties:
+Consider how confidence is established in mathematics. A theorem commands assent not
+because anyone has \emph{reproduced} it---there is no experimental rerun of a
+theorem---but because its proof is a chain of steps, each checkable by any competent
+mathematician, linked by rules of inference that are sound. Two features carry the
+entire weight of mathematical confidence: the \emph{integrity} of the proof chain (a
+single slipped step, a gap, or a substituted lemma breaks it), and the \emph{soundness}
+of the reasoning that links step to step. If either fails, the theorem falls. Neither
+feature has anything to do with reproducibility: a proof is not more credible for
+having been re-derived twice, and a false theorem is not made true by many faithful
+re-derivations.
 
-\begin{itemize}
-  \item \textbf{record integrity} --- the committed record has not been altered,
-        reordered, or truncated without detection;
-  \item \textbf{temporal commitment} --- the record, or a hash of it, existed no later
-        than some externally attested time;
-  \item \textbf{key attestation} --- the record was produced by the holder of a
-        specific key or device;
-  \item \textbf{capture fidelity} --- recorded events correspond to the external events
-        they claim to describe;
-  \item \textbf{completeness} --- all relevant activity was captured; and
-  \item \textbf{process authenticity} --- the recorded process is the process that
-        actually occurred.
-\end{itemize}
+Mathematics thus demonstrates something the present crisis makes worth noticing. A
+community can ground its confidence in knowledge not on rerunning it, but on the
+checkability and integrity of the reasoning chain itself. Empirical science has, by
+contrast, concentrated its confidence mechanism almost exclusively on reproducibility---
+the empirical analogue of rerunning---and has left the corresponding chain, from
+evidence to conclusion, largely unsecured and unchecked. The proposal of this paper is
+that science can borrow the mathematical confidence-structure for exactly that neglected
+dimension: make the chain of process evidence as checkable and as resistant to
+retroactive alteration as a proof chain, so that confidence in a scientific claim can
+rest partly on the integrity of its evidence chain and the soundness of the inference
+from evidence to claim, and not solely on reproducibility.
 
-The first three are mechanizable with standard cryptography; the last three are not, in
-general, mechanically verifiable at all. Capture fidelity holds only relative to a
-trusted capture boundary, and completeness and process authenticity are beyond what any
-recording system can prove about its own inputs. A signer can always commit a chain of
-events that never happened; no amount of hashing or signing can detect that, because
-the fabrication happens \emph{before} recording, not after. This gap between key
-possession and process authenticity is precisely what recent ``proof-of-process'' work
-has made explicit \citep{condrey2026witnessd}.
+One qualification keeps the analogy honest. Mathematics is deductive: a valid proof
+confers certainty. Science is inductive: evidence confers probability, never certainty.
+The analogy is therefore not an analogy of \emph{certainty} but of \emph{structure}:
+both communities can rest confidence on a checkable chain plus sound inference, rather
+than on rerunning alone. Unforgeable process evidence cannot make an empirical claim
+certain any more than reproducibility can; what it can do is give the inductive
+inference the same kind of checkable, integrity-preserving backbone that proof gives to
+deduction. This is the sense in which the mathematical analogy is a model for the
+paradigm, not a promise of mathematical certainty.
 
-We reserve \emph{unforgeability} for the first property, stated precisely. Relative to
-a threat model $T$ and an adversary class $\mathcal A$, a committed record is
-\emph{unforgeable} if $\mathcal A$ cannot alter, reorder, or backdate it without that
-change being detected by re-deriving its hashes and signatures. So defined,
-unforgeability is a property of the \emph{record}, not of the world it describes: it
-certifies that the record has not been rewritten since it was committed and signed, and
-nothing more. It is this precise, checkable property---not the unattainable one of
-``the process really happened''---that the rest of the paper adopts. Two qualifications
-keep the claim honest. First, unforgeability is \emph{computational} and
-\emph{conditional}: it rests on the hardness of standard primitives---collision-resistant
-hashing, unforgeable signatures under the \ed scheme \citep{bernstein2012}, and
-authenticated encryption \citep{bernstein2008}---and on operational assumptions such as
-the secrecy of signing keys and the integrity of any external timestamp. Second, it is a
-property of the record, not a verdict on the research: an unforgeable record of a flawed
-experiment is still a flawed experiment.
-
-This precision is what gives the property its epistemic force, and we state it as
-\emph{defeater reduction}. A scientific claim faces many possible defeaters---ways in
-which the evidence for it could fail. A verified record does not eliminate all of them;
-it eliminates a \emph{specified class}, namely those that operate by rewriting the
-record after the fact: post-hoc editing, backdating, silent deletion or reordering, and
-hidden coverage gaps. Those defeaters are exactly the ones reproducibility cannot see,
-because they attack the act rather than the artifact. Converting them from matters of
-contested testimony into matters of checkable fact is a modest but genuine
-strengthening of the evidence base---modest, because it never establishes truth;
-genuine, because it narrows the ways a claim can be false. The exemplar in
-\S\ref{sec:design} is organized around exactly this property: a hash chain, canonical
-serialization, a device signature, and an optional timestamp, each contributing one of
-the three mechanizable properties.
-
-\subsection{Unforgeability as a matter of degree}
+\subsection{Unforgeability as a property of evidence}
 \label{sec:degree}
 
-We have treated unforgeability as a cryptographic property, but the underlying notion
-is more general, and recognizing that generality clarifies both what the cryptography
-buys and why the concept is epistemically fundamental.
-
-Unforgeability, broadly understood, attaches to \emph{evidence} and to the specific
-claims that evidence is meant to secure, and it is a matter of \emph{degree} rather than
-an all-or-nothing property. Consider two photographs of the same scene. One is a
-yellowed, creased print offered by an elderly woman in a remote mountain village; the
-other is a visually identical image supplied by a young engineer in a high-tech
-industrial park. As images they are indistinguishable, but as evidence they are not
-equally credible. The difference lies not in what the images show but in how hard it
-would be, for each bearer, to produce a convincing counterfeit. The village photograph
-is embedded in circumstances---physical aging, the absence of any fabrication
-infrastructure, and a bearer with neither the means nor the motive to forge---that
-together make a counterfeit expensive and improbable. The engineer's image can be
-synthesized or altered with tools and skill that are cheaply available to its bearer.
-The first photograph has the higher \emph{degree of unforgeability}, and that is what
+Unforgeability, we propose, is a property of \emph{evidence}, not of any particular
+record, and it is graded rather than all-or-nothing. Evidence is that which warrants
+belief in a claim, and evidence can be easier or harder to counterfeit. Consider two
+photographs of the same scene. One is a yellowed, creased print offered by an elderly
+woman in a remote village; the other is a visually identical image supplied by an
+engineer with ready access to synthesis tools. As images they are indistinguishable; as
+evidence they are not equally credible, because the two bearers face very different
+costs in producing a convincing counterfeit. The village photograph is embedded in
+circumstances---physical aging, no fabrication infrastructure, no obvious means---that
+make a counterfeit expensive and improbable; the engineer's image can be altered
+cheaply. The first has the higher \emph{degree of unforgeability}, and that is what
 underwrites its greater evidentiary weight.
 
-This graded, pre-theoretic notion is exactly what the cryptography of
-\S\ref{sec:design} makes explicit and, within a bounded domain, near-maximal. A hash
-chain and a device signature add no new \emph{content} to a record; they raise its
-degree of unforgeability by attaching a checkable difficulty to any after-the-fact
-counterfeit. The degree is never absolute---it is relative to a threat model and to the
-resources and assumptions granted to an adversary---but it is made \emph{explicit},
-where the village photograph's degree is merely implicit and circumstantial. This, we
-suggest, is the deeper point: the formation of evidence, and therefore of trustworthy
-knowledge, has always depended on this largely unspoken notion of how hard a thing is
-to forge. Process evidence makes that notion explicit, checkable, and precise within
-its stated bounds.
+This graded, pre-theoretic notion is what cryptographic recording makes explicit and,
+within a bounded domain, nearly maximal. A hash chain and a device signature add no new
+\emph{content} to evidence; they raise its degree of unforgeability by attaching a
+checkable difficulty to any after-the-fact counterfeit. The degree is never absolute---it
+is relative to a threat model and to the resources an adversary can bring---but it is
+made \emph{explicit and checkable}, where the village photograph's degree is merely
+implicit and circumstantial. This is the deeper point: the formation of evidence, and
+therefore of trustworthy knowledge, has always depended on this largely unspoken notion
+of how hard a thing is to forge. Process evidence makes that notion explicit.
 
-A corollary follows. The epistemic contribution of process evidence is primarily
-\emph{eliminative} rather than directly \emph{confirmatory}. A validated record does
-not establish that the scientific claim is true, or even that the entire research
-process occurred exactly as represented. It rules out, or substantially weakens, a
-specific class of alternative explanations---that committed records were silently
-altered, reordered, or deleted after the fact. It removes grounds for doubt rather than
-supplying positive proof of honesty or truth. That is a real and measurable gain, but
-it is a gain in the strength of a \emph{warrant}, not a shortcut to certainty.
+It is equally important to state what unforgeability is \emph{not}. Evidence can be
+asked to vouch for several things, and only some of them can be fixed by a mechanism.
+What a mechanism can secure is that a committed record has not been altered since it was
+produced, and---with external anchoring---when it was produced. What no mechanism can
+secure is that the recorded events correspond to reality, that capture was complete, or
+that the recorded process is the process that actually occurred; a signer can always
+commit a chain of events that never happened. This boundary is what keeps the property
+honest: unforgeability attaches to the evidence's resistance to retroactive fabrication,
+and it is strongest exactly where it refuses to over-reach.
+
+A corollary follows. The epistemic contribution of unforgeable evidence is primarily
+\emph{eliminative} rather than directly \emph{confirmatory}. A validated record does not
+establish that the scientific claim is true, or even that the entire research process
+occurred exactly as represented. It rules out, or substantially weakens, a specific
+class of \emph{defeaters}---that the committed record was silently altered, reordered,
+rewritten, or backdated after the fact \citep{pollock1986}. It removes grounds for doubt
+rather than supplying positive proof of honesty or truth. That is a real and measurable
+gain, but it is a gain in the strength of a \emph{warrant}, not a shortcut to certainty.
+
+\subsection{The paradigm as a system of community review and knowledge-establishment}
+\label{sec:system}
+
+It is important to see unforgeability not as a property one attaches to a record, but
+as the organizing concept of a social-epistemic system. A paradigm, in the sense that
+matters here, is a way a community organizes the certification of knowledge
+\citep{kuhn1962}. The reproducibility paradigm organizes certification around the
+question ``can the result be rebuilt?''; it has produced an entire apparatus---data and
+code sharing, preregistration, replication consortia, journal data policies. The
+paradigm proposed here organizes a complementary apparatus around the question ``is the
+evidence for the result what it claims to be, and can that be checked?'' Its machinery
+is a set of norms and practices: researchers produce process evidence whose
+unforgeability can be verified; peers, journals, and archives run an offline verifier on
+it; and confidence in a claim may then appeal to the unforgeability of its evidence
+chain and to the soundness of the reasoning from evidence to conclusion---rather than to
+reproducibility alone.
+
+This is not a claim that such a system would replace reproducibility, nor that it would
+certify honesty. It is the claim that scientific certification and confidence need not
+be monopolized by reproducibility, and that mathematics shows how a checkable,
+integrity-preserving chain can serve as an alternative---and complementary---ground of
+assent. The paradigm's center of gravity is therefore institutional and epistemic, not
+technological. The cryptography that raises unforgeability is a means; and, as with the
+blockchain schemes sometimes invoked for the same purpose, it is best understood as an
+illustrative heuristic rather than the point itself. The point is the system of review
+that such evidence makes possible.
 
 \subsection{Complementarity with reproducibility}
 
@@ -384,7 +418,7 @@ questions, and both are needed. Two clarifications guard against over-reading th
 relationship. First, reproducibility is itself narrower than is often assumed: in the
 standard usage it means that a reported result can be recomputed from the same data,
 code, and procedures---it establishes recomputability, not truth, and not the
-soundness of the process that produced the data. Second, a verified process record
+soundness of the process that produced the data. Second, a verified evidence chain
 reduces a \emph{specified class} of provenance doubts; it does not convert a failure
 to reproduce into a purely methodological verdict. A result can be reproducible and yet
 rest on a fabricated or selectively edited account, and a result can be unforgeably
@@ -392,11 +426,11 @@ recorded and yet be wrong, dishonest, or built on events that were themselves fa
 before recording.
 
 The relationship is cleanest as a two-by-two space (Table~\ref{tab:comp}). A result that
-is reproducible but whose process record is forgeable can be rebuilt yet may rest on a
-fabricated account. A result whose record is unforgeable but which fails to reproduce
-still faces open questions of method, honesty, and unrecorded activity---its record is
-intact, but its inference remains doubtful. A result that is both reproducible and
-unforgeably recorded enjoys the strongest available evidentiary basis short of
+is reproducible but whose evidence is forgeable can be rebuilt yet may rest on a
+fabricated account. A result whose evidence is unforgeable but which fails to reproduce
+still faces open questions of method, honesty, and unrecorded activity---its evidence
+chain is intact, but its inference remains doubtful. A result that is both reproducible
+and unforgeably recorded enjoys the strongest available evidentiary basis short of
 independent corroboration of the underlying phenomenon. And a result that is neither
 commands the least.
 
@@ -407,11 +441,11 @@ commands the least.
 \toprule
  & \textbf{Reproducible} & \textbf{Not reproducible} \\
 \midrule
-\textbf{Unforgeable process} &
-result regenerates \emph{and} the record is intact (strongest) &
-record intact but result does not regenerate (provenance doubts reduced; method, honesty, or unrecorded activity remain possible) \\
-\textbf{Forgeable process} &
-result regenerates but process may be fabricated or edited &
+\textbf{Unforgeable evidence} &
+result regenerates \emph{and} the evidence chain is intact (strongest) &
+evidence intact but result does not regenerate (provenance doubts reduced; method, honesty, or unrecorded activity remain possible) \\
+\textbf{Forgeable evidence} &
+result regenerates but the evidence may be fabricated or edited &
 neither regenerable nor attested (weakest) \\
 \bottomrule
 \end{tabular}
@@ -421,60 +455,55 @@ independent. Each cell indicates what the two properties jointly establish.}
 \end{table}
 
 Two observations follow. First, the properties are \emph{independent}: knowing that a
-result reproduces tells us nothing about whether its process was genuine, and knowing
-that its process was unforgeably recorded tells us nothing about whether the result will
-reproduce. This independence is exactly why unforgeability contributes evidence that
-reproducibility cannot supply. Second, the value of unforgeability is asymmetric and
-incremental: it does not raise the ceiling of what science can claim, but it raises the
-floor below which evidence cannot easily fall. By making the retroactive rewriting of
-the record detectable, it converts a category of integrity failures from matters of
+result reproduces tells us nothing about whether its evidence was genuine, and knowing
+that its evidence was unforgeably recorded tells us nothing about whether the result
+will reproduce. This independence is exactly why unforgeability contributes evidence
+that reproducibility cannot supply. Second, the value of unforgeability is asymmetric
+and incremental: it does not raise the ceiling of what science can claim, but it raises
+the floor below which evidence cannot easily fall. By making the retroactive rewriting
+of the record detectable, it converts a category of integrity failures from matters of
 contested testimony into matters of checkable fact.
-That is a modest but genuine strengthening of the evidentiary basis on which scientific
-truth-claims rest---modest, because it never establishes truth; genuine, because it
-narrows the ways a claim could be false.
 
-\subsection{Technical feasibility}
+\subsection{Illustrative mechanisms}
 
 The property would be idle if it were not attainable with ordinary tooling, on ordinary
-machines, without imposing surveillance. Three developments make unforgeable process
-evidence practical now where it was not a decade ago.
+machines, without imposing surveillance. The mechanisms are standard and illustrative
+rather than novel, and we mention them only to establish feasibility, not to add
+technical apparatus.
 
-\textbf{Local-first capture without a panopticon.} The evidence can be collected on the
-researcher's own machine, with no server, no telemetry, and sensitive content never
-leaving the device in cleartext. This addresses the principal objection to process
-recording---that it is surveillance---and aligns with data-minimization norms
-\citep{voigt2017}. Local-first is a design choice in service of unforgeability's
-adoption, not a headline property: it removes the single largest reason a researcher
-would refuse the tool, and thereby widens the conditions under which an unforgeable
-record can exist at all.
+\textbf{Local-first capture.} The evidence can be collected on the researcher's own
+machine, with no server, no telemetry, and sensitive content never leaving the device
+in cleartext. This addresses the principal objection to process recording---that it is
+surveillance---and aligns with data-minimization norms \citep{voigt2017}. Local-first is
+a design choice in service of the paradigm's adoption, not a headline property.
 
-\textbf{Cheap, standard cryptography.} Every primitive the property needs is
-library-grade. An append-only hash chain commits each event to its predecessor, so
-deletion, reordering, or editing breaks the chain \citep{crosby2009}. Canonical
-serialization (\jcs) makes hashing independent of key order and whitespace
-\citep{rfc8785}. A device signature under \ed attests the recorder and gives the record
-its unforgeable anchor \citep{bernstein2012}. Authenticated encryption (\aead) seals
-sensitive content \citep{bernstein2008}. An internet-independent timestamp, such as
-OpenTimestamps, can later prove existence at or before a point in time without trusting
-a notary \citep{opents}. None of this is exotic; all of it is battle-tested.
+\textbf{Cheap, standard cryptography.} An append-only hash chain commits each event to
+its predecessor, so that editing, deleting, or reordering any event breaks the chain
+\citep{crosby2009}. A device signature attests the recorder \citep{bernstein2012};
+canonical serialization makes hashing independent of incidental formatting
+\citep{rfc8785}; authenticated encryption seals sensitive content so that verification
+can proceed without exposing it \citep{bernstein2008}; and an optional external
+timestamp---the mechanism behind blockchain-anchored timestamping---can prove existence
+at or before a point in time without trusting a notary \citep{opents}. None of this is
+exotic; all of it is battle-tested.
 
 \textbf{Offline, adversarial verification.} Because the property is mathematical, a
 skeptic needs no special access to check it. The verifier is a small, auditable program
 that re-derives every hash and signature; its success, rather than any party's
-assertion, is what licenses the inference that the record is genuine. This is the same
-principle that makes signed commits and checksums trustworthy without a trusted third
-party, and it is what distinguishes unforgeable process evidence from a self-reported
-methods section, which remains forgeable however detailed it is.
+assertion, is what licenses the inference that the evidence is genuine. This is the
+same principle that makes signed commits and checksums trustworthy without a trusted
+third party, and it is what distinguishes unforgeable process evidence from a
+self-reported methods section, which remains forgeable however detailed it is.
 
 \section{A Feasibility Exemplar: a Prototype Reference Implementation}
 \label{sec:design}
 
 We now illustrate---not exhaust---the argument with a deliberately brief account of
-\air, an open-source \emph{prototype} reference implementation of the \evpkg, released under the AGPL-3.0
-license and open to community contribution. It is a proof-of-concept, not a finished
-system: the specification is the stable artifact, while the code is an evolving
-demonstration that the property is attainable, with deliberately partial platform
-support. We therefore describe only the mechanisms that carry the argument---
+\air, an open-source \emph{prototype} reference implementation of the \evpkg, released
+under the AGPL-3.0 license and open to community contribution. It is a proof-of-concept,
+not a finished system: the specification is the stable artifact, while the code is an
+evolving demonstration that the property is attainable, with deliberately partial
+platform support. We therefore describe only the mechanisms that carry the argument---
 \emph{unforgeability}, \emph{local-first capture}, \emph{honest capability disclosure},
 \emph{privacy-by-default}, and \emph{offline verification}---and leave implementation
 detail to the project itself.
@@ -519,11 +548,7 @@ The core mechanism is an append-only hash chain. Each recorded moment is an
 kind, and a sensitivity label; its payload hash and the hash of the preceding event are
 committed into the event's own hash. Because every link binds its predecessor, editing,
 deleting, or reordering any event changes its hash and so breaks every subsequent link
-and the signed head of the chain \citep{crosby2009}. The primitives are standard and
-battle-tested: collision-resistant hashing, a device signature, authenticated
-encryption for sensitive content, and an optional internet-independent timestamp to
-prove existence at or before a point in time
-\citep{rfc8785,bernstein2012,bernstein2008,opents}. Events are persisted as immutable,
+and the signed head of the chain \citep{crosby2009}. Events are persisted as immutable,
 append-only encrypted segments with signed checkpoints of the chain head; a crash is
 reconciled on open, and unsigned, missing, or reordered segments are rejected, so
 history cannot be silently rewritten.
@@ -550,9 +575,9 @@ explicit about where it stops.
 
 Because the property is mathematical, a skeptic can check it without special access: a
 small, auditable verifier re-derives every hash and signature from the package alone,
-and its success---not any party's assertion---licenses the inference that the record is
-genuine. Success proves \emph{record integrity and a device signature only}, and the
-verifier's own output says so.
+and its success---not any party's assertion---licenses the inference that the evidence
+is genuine. Success proves \emph{the integrity of the evidence chain and a device
+signature only}, and the verifier's own output says so.
 
 \section{Scope, Limitations, Governance, and Adoption}
 \label{sec:scope}
@@ -575,7 +600,7 @@ not to any particular implementation.
         keys remain secret and any external timestamp is honest; a compromised key or a
         controlled clock can retrospectively undermine the record. Unforgeability is a
         guarantee under assumptions, not an absolute.
-  \item \textbf{Attests the record, not the world.} An unforgeable record shows that
+  \item \textbf{Attests the evidence, not the world.} An unforgeable record shows that
         the committed record has not been altered after commitment. It does not
         establish that the recorded events correspond to real occurrences, that the
         result is true, the method correct, or the work original; a faithfully recorded
@@ -599,25 +624,29 @@ These limits are features when stated plainly: unforgeable evidence is trustwort
 
 \subsection{Governance and adoption path}
 
-We propose unforgeable process evidence as a lightweight, open community standard, in
-the spirit of how code signing and transparency logs became default expectations
-\citep{crosby2009}. Concrete steps:
+The paradigm is a system, and a system is built by norms and institutions, not by a
+technology alone. We therefore propose it as a lightweight, open community standard, in
+the spirit of how tamper-evident logging and code signing became default engineering
+expectations \citep{crosby2009}. Concrete steps toward that system:
 
 \begin{enumerate}
   \item \textbf{Open specification and interop.} The format and its verification are
-        specified openly, so any archive or journal can check a deposited package
-        without vendor lock-in.
+        specified openly, so any archive, journal, or reviewer can check a deposited
+        package without vendor lock-in. Interoperable verification is what turns a
+        proprietary tool into a community standard.
   \item \textbf{Complement, don't replace.} Tie the record to existing norms: the
         data-availability statement, the preregistration, and the conflicts/disclosure
         form. The AI-disclosure entity maps directly onto emerging AI-use policies
-        \citep{gao2023,cope2023}.
+        \citep{cope2023}.
   \item \textbf{Tiered adoption.} Start with self-archiving and reviewer-on-request,
         then optional journal encouragement, then (where appropriate) a deposition
         requirement for certain claim types. Voluntary, low-friction adoption avoids the
         surveillance objection.
   \item \textbf{Incentives for honesty.} Because gaps are recorded, a complete,
         gap-light record becomes a positive signal; a record full of disclosed gaps is
-        at least honest, which is more than the current default of silence.
+        at least honest, which is more than the current default of silence. Over time,
+        the community can learn to read these records as it reads a proof: not as a
+        certificate of truth, but as a checkable account of how a result was reached.
 \end{enumerate}
 
 \section{Conclusion}
@@ -625,18 +654,24 @@ the spirit of how code signing and transparency logs became default expectations
 
 Reproducibility verifies \emph{what} was claimed; unforgeable process evidence verifies
 \emph{how} the claim was arrived at---but only in a deliberately bounded sense. We have
-argued that this second axis is a new paradigm of scientific integrity---not a
+argued that this second axis underwrites a new paradigm of scientific integrity---not a
 replacement for reproducibility but a partner to it, closing the gap that
-reproducibility, by construction, cannot see. Its precise content is defeater
-reduction: a verified record does not prove that the recorded process occurred, or that
-the science is sound; it makes a specified class of retrospective manipulations---editing,
-backdating, silent deletion, hidden gaps---independently detectable, while remaining
-explicit about truth, authorship, and completeness, which it does not establish.
-The property is attainable today with local, privacy-preserving, cryptographic recording
-and offline adversarial verification, as an open specification and a prototype
-implementation demonstrate. Adopting unforgeable process evidence will not end the
-reproducibility crisis, but it gives the scientific community a new, precisely bounded
-instrument for the part of integrity that reproducibility was never designed to observe.
+reproducibility, by construction, cannot see. The paradigm is a system, not a tool: a
+way of organizing community review and the certification of knowledge so that confidence
+in a scientific claim can rest on the unforgeability of its evidence chain and the
+soundness of the reasoning from evidence to claim, rather than on reproducibility
+alone. Its model is mathematics, where confidence in a theorem has always rested on the
+checkability of the proof chain and the soundness of inference, never on rerunning---and
+where the same honesty about limits applies, since a checkable chain attests the
+inference, not the truth of its premises. Unforgeability is a graded property of
+evidence, and its epistemic role is defeater reduction: it makes a specified class of
+retrospective manipulations---editing, backdating, silent deletion---independently
+detectable, while remaining explicit about truth, authorship, and completeness, which it
+does not establish. The property is attainable today with local, privacy-preserving,
+cryptographic recording and offline adversarial verification, as an open specification
+and a prototype implementation demonstrate. Adopting it will not end the reproducibility
+crisis, but it gives the scientific community a new, precisely bounded instrument for the
+part of integrity that reproducibility was never designed to observe.
 
 \section*{Acknowledgments}
 \label{sec:ack}
