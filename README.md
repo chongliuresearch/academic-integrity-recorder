@@ -83,7 +83,7 @@ cargo run -p evidence-verifier -- path/to/package.evidence.zip --password 'revie
 
 ```mermaid
 flowchart LR
-  A[Capture adapters<br/>macOS native / browser / VS Code / shell] --> B[Evidence core (Rust)<br/>hash chain · RFC 8785<br/>XChaCha20-Poly1305 · Ed25519 · Argon2id]
+  A[Capture adapters<br/>macOS native / browser / VS Code / shell] --> B[Evidence core · Rust<br/>hash chain · RFC 8785<br/>XChaCha20-Poly1305 · Ed25519 · Argon2id]
   B --> C[Local store<br/>SQLite index + immutable encrypted segments<br/>+ signed high-water checkpoints]
   C --> D[Export Evidence Package v1<br/>public layer + sensitive layer]
   D --> E[Offline verifier<br/>manifest signature + chain integrity]
