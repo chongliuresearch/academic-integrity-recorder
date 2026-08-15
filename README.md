@@ -16,8 +16,8 @@ This repository contains:
 
 ## Paper
 
-The repository accompanies an English paper arguing for *unforgeability* as a
-distinct pillar of scientific integrity, parallel to reproducibility:
+The repository accompanies a paper arguing for *unforgeability* as a distinct
+pillar of scientific integrity, parallel to reproducibility:
 
 > **Unforgeable Process Evidence: A New Paradigm of Scientific Integrity
 > Complementing Reproducibility**
