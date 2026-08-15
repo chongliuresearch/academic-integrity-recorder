@@ -27,9 +27,11 @@ on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
   target.
 - **Docs**: `docs/THREAT_MODEL.md`, `docs/PLATFORM_CAPABILITIES.md`,
   `docs/OPENTIMESTAMPS.md`.
-- **Paper**: `paper/` — "Process Trustworthiness" (English, LaTeX) proposing process
-  provenance as a complement to reproducibility, with reference implementation.
-- **Repo**: CI workflow, `SECURITY.md`, `CONTRIBUTING.md`, `CHANGELOG.md`.
+- **Paper**: `paper/` — "Unforgeable Process Evidence: A New Paradigm of Scientific
+  Integrity Complementing Reproducibility" (LaTeX), proposing unforgeable process
+  evidence as a complement to reproducibility, with a prototype reference
+  implementation.
+- **Repo**: `SECURITY.md`, `CONTRIBUTING.md`, `CHANGELOG.md`.
 
 ### Design notes
 - The system verifies process *evidence*; it does **not** certify identity, authorship,

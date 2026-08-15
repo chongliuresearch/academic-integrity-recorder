@@ -75,7 +75,7 @@ cargo run -p evidence-verifier -- path/to/package.evidence.zip --password 'revie
 - `apps/desktop` — Tauri 2 + React desktop application.
 - `extensions/browser` — Chrome/Edge/Firefox WebExtension.
 - `extensions/vscode` — VS Code semantic-event extension.
-- `integrations/shell` — optional zsh/bash command-event integration.
+- `integrations/shell` — optional zsh command-event integration.
 - `spec/evidence-package-v1.md` — the public evidence-package specification.
 - `tools/verifier` — offline verifier.
 

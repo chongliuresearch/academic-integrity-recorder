@@ -9,3 +9,16 @@ target/
 !.env.example
 apps/desktop/src-tauri/bin/
 
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Local workspace data
+.workbuddy/
+

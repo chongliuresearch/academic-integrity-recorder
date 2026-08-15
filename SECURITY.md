@@ -26,7 +26,7 @@ or tamper with an evidence package without detection, a key-handling flaw, or a
 privacy leak that exfiltrates content off-device), please report it privately.
 
 - Open a private security advisory on GitHub, or
-- Email the maintainers at [security@example.org] (replace with the real address).
+- Email the maintainer at [chong.liu.phil@outlook.com](mailto:chong.liu.phil@outlook.com).
 
 Please do **not** open a public issue for security reports.
 
