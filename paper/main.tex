@@ -21,9 +21,6 @@
 \newcommand{\pkg}{\textsc}
 \newcommand{\air}{\pkg{Academic Integrity Recorder}\xspace}
 \newcommand{\evpkg}{\textsc{Evidence Package~v1}\xspace}
-\newcommand{\jcs}{\textsc{RFC\,8785 JCS}\xspace}
-\newcommand{\aead}{\textsc{XChaCha20-Poly1305}\xspace}
-\newcommand{\ed}{\textsc{Ed25519}\xspace}
 
 \title{Unforgeable Evidence:\\ A New Paradigm for Certifying\\ Scientific Knowledge}
 
@@ -498,7 +495,7 @@ its predecessor, so that editing, deleting, or reordering any event breaks the c
 \citep{crosby2009}. A device signature attests the recorder \citep{bernstein2012};
 canonical serialization makes hashing independent of incidental formatting
 \citep{rfc8785}; authenticated encryption seals sensitive content so that verification
-can proceed without exposing it \citep{bernstein2008}; and an optional external
+can proceed without exposing it \citep{rfc8439}; and an optional external
 timestamp---the mechanism behind blockchain-anchored timestamping---can prove existence
 at or before a point in time without trusting a notary \citep{opents}. None of this is
 exotic; all of it is battle-tested.
