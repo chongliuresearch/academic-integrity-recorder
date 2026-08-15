@@ -31,7 +31,7 @@ on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
   Integrity Complementing Reproducibility" (LaTeX), proposing unforgeable process
   evidence as a complement to reproducibility, with a prototype reference
   implementation.
-- **Repo**: `SECURITY.md`, `CONTRIBUTING.md`, `CHANGELOG.md`.
+- **Repo**: CI workflow, `SECURITY.md`, `CONTRIBUTING.md`, `CHANGELOG.md`.
 
 ### Design notes
 - The system verifies process *evidence*; it does **not** certify identity, authorship,
